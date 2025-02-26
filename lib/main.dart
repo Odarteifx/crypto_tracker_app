@@ -1,5 +1,8 @@
 import 'package:crypto_tracker_app/screens/onboarding.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 void main() {
   runApp(const MyApp());
@@ -8,20 +11,24 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Trexo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const CryptoTracker(),
-    );
+    return ScreenUtilInit(
+        designSize: Size(390, 844),
+        builder: (context, child) {
+          return ShadApp(
+            title: 'Trezo',
+            debugShowCheckedModeBanner: false,
+            theme: ShadThemeData(
+              brightness: Brightness.light,
+              colorScheme: ShadBlueColorScheme.light(),
+              textTheme: ShadTextTheme.fromGoogleFont(GoogleFonts.inter),
+            ),
+            home: const CryptoTracker(),
+          );
+        });
   }
 }
-
 
 class CryptoTracker extends StatefulWidget {
   const CryptoTracker({super.key});
