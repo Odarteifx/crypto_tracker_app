@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:rive/rive.dart';
 
 class CryptoOnboarding extends StatefulWidget {
   const CryptoOnboarding({super.key});
@@ -14,10 +14,7 @@ class _CryptoOnboardingState extends State<CryptoOnboarding> {
     return Scaffold(
       backgroundColor: const Color(0xFF1a73e8),
       body: Center(
-        child: Text(
-          'Trezo',
-          style: GoogleFonts.anton(color: Colors.white, fontSize: 94, letterSpacing: -6),
-        ),
+        child: RiveAnimation.asset('assets/onboarding_animation.riv')
       ),
     );
   }
