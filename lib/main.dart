@@ -1,3 +1,4 @@
+import 'package:crypto_tracker_app/router.dart';
 import 'package:crypto_tracker_app/screens/onboarding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -16,7 +17,7 @@ class MyApp extends StatelessWidget {
     return ScreenUtilInit(
         designSize: Size(390, 844),
         builder: (context, child) {
-          return ShadApp(
+          return ShadApp.router(
             title: 'Trezo',
             debugShowCheckedModeBanner: false,
             theme: ShadThemeData(
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
               colorScheme: ShadBlueColorScheme.light(),
               textTheme: ShadTextTheme.fromGoogleFont(GoogleFonts.inter),
             ),
-            home: const CryptoTracker(),
+            routerConfig: router,
           );
         });
   }
