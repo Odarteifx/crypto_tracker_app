@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             theme: ShadThemeData(
               brightness: Brightness.light,
-              colorScheme: ShadBlueColorScheme.light(),
+              colorScheme: ShadZincColorScheme.light(),
               textTheme: ShadTextTheme.fromGoogleFont(GoogleFonts.inter),
             ),
             routerConfig: router,
