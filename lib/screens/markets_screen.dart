@@ -1,8 +1,10 @@
 import 'dart:ui';
 
 import 'package:crypto_tracker_app/constants/colors.dart';
+import 'package:crypto_tracker_app/widgets/translucent_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 class MarketsScreen extends StatelessWidget {
@@ -24,7 +26,7 @@ class MarketsScreen extends StatelessWidget {
               child: ShadIconButton.ghost(
                   icon: Icon(
                     LucideIcons.search,
-                    size: 25.sp,
+                    size: 22.sp,
                     color: AppColors.inactiveIcon,
                   ),
                   onPressed: () {}),
@@ -37,13 +39,17 @@ class MarketsScreen extends StatelessWidget {
               itemCount: 50,
               itemBuilder: (context, index) {
                 return ListTile(
-                  
                   title: Text('Item $index'),
-                  trailing: Text('chart data', style: TextStyle(color: index % 2 == 0 ? Colors.pink : Colors.purple,),),
+                  trailing: Text(
+                    'chart data',
+                    style: TextStyle(
+                      color: index % 2 == 0 ? Colors.pink : Colors.purple,
+                    ),
+                  ),
                 );
               },
             ),
-            TranslucentNavBar(),
+            TranslucentNavBar(currentRoute: '/markets'),
           ],
         ));
   }
@@ -52,6 +58,7 @@ class MarketsScreen extends StatelessWidget {
 class TranslucentNavBar extends StatelessWidget {
   const TranslucentNavBar({
     super.key,
+    required String currentRoute,
   });
 
   @override
@@ -63,7 +70,7 @@ class TranslucentNavBar extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(40.sp),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 30.sp, sigmaY: 30.sp),
+          filter: ImageFilter.blur(sigmaX: 5.sp, sigmaY: 5.sp),
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 24.sp, vertical: 15.sp),
             decoration: BoxDecoration(
@@ -73,7 +80,10 @@ class TranslucentNavBar extends StatelessWidget {
                   color: const Color.fromRGBO(255, 255, 255, 0.5),
                   width: 1.5.sp),
               gradient: LinearGradient(
-                colors: [const Color.fromRGBO(255, 255, 255, 0.3), const Color.fromRGBO(255, 255, 255, 0.15)],
+                colors: [
+                  const Color.fromRGBO(255, 255, 255, 0.4),
+                  const Color.fromRGBO(255, 255, 255, 0.1)
+                ],
               ),
               boxShadow: [
                 BoxShadow(
@@ -87,13 +97,16 @@ class TranslucentNavBar extends StatelessWidget {
             height: 70.sp,
             child: Row(
               children: [
-                _buildNavItem(LucideIcons.chartArea, 'Markets', isActive: true),
+                _buildNavItem(
+                    context, LucideIcons.chartArea, 'Markets', '/markets',
+                    isActive: true),
                 const Spacer(),
-                 _buildNavItem(LucideIcons.newspaper, 'News'),
+                _buildNavItem(context, LucideIcons.newspaper, 'News', '/news'),
                 const Spacer(),
-                _buildNavItem(LucideIcons.search, 'Search'),
+                _buildNavItem(context, LucideIcons.search, 'Search', '/search'),
                 const Spacer(),
-                _buildNavItem(LucideIcons.wallet, 'Wallet'),
+                _buildNavItem(
+                    context, LucideIcons.settings, 'Settings', '/settings'),
               ],
             ),
           ),
@@ -103,23 +116,31 @@ class TranslucentNavBar extends StatelessWidget {
   }
 }
 
-Widget _buildNavItem(IconData icon, String label, {bool isActive = false}) {
-  return Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Icon(
-        icon,
-        size: 20.sp,
-        color: isActive ? AppColors.appColor : AppColors.inactiveIcon,
-      ),
-      // const SizedBox(height: 4),
-      Text(
-        label,
-        style: TextStyle(
-          fontSize: 10.sp,
+Widget _buildNavItem(
+    BuildContext context, IconData icon, String label, String route,
+    {bool isActive = false}) {
+  return GestureDetector(
+    onTap: () {
+      if (!isActive) {
+        context.go(route);
+      }
+    },
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          size: 20.sp,
           color: isActive ? AppColors.appColor : AppColors.inactiveIcon,
         ),
-      ),
-    ],
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10.sp,
+            color: isActive ? AppColors.appColor : AppColors.inactiveIcon,
+          ),
+        ),
+      ],
+    ),
   );
 }
