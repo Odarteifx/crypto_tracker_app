@@ -1,3 +1,4 @@
+import 'package:crypto_tracker_app/constants/assets.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rive/rive.dart';
@@ -14,7 +15,11 @@ class _CryptoOnboardingState extends State<CryptoOnboarding> {
   void initState() {
     Future.delayed(
       const Duration(seconds: 5),
-      () => context.go('/markets'),
+      () {
+        if (mounted) {
+          context.go('/markets');
+        }
+      },
     );
     super.initState();
   }
@@ -24,7 +29,7 @@ class _CryptoOnboardingState extends State<CryptoOnboarding> {
     return Scaffold(
       backgroundColor: const Color(0xFF1a73e8),
       body:
-          Center(child: RiveAnimation.asset('assets/onboarding_animation.riv')),
+          Center(child: RiveAnimation.asset(Assets.trezoranimation)),
     );
   }
 }

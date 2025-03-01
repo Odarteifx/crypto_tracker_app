@@ -32,7 +32,10 @@ class TranslucentNavBar extends StatelessWidget {
                   color: const Color.fromRGBO(255, 255, 255, 0.5),
                   width: 1.5.sp),
               gradient: LinearGradient(
-                colors: [const Color.fromRGBO(255, 255, 255, 0.4), const Color.fromRGBO(255, 255, 255, 0.1)],
+                colors: [
+                  const Color.fromRGBO(255, 255, 255, 0.4),
+                  const Color.fromRGBO(255, 255, 255, 0.1)
+                ],
               ),
               boxShadow: [
                 BoxShadow(
@@ -46,13 +49,15 @@ class TranslucentNavBar extends StatelessWidget {
             height: 70.sp,
             child: Row(
               children: [
-                _buildNavItem(context, LucideIcons.chartArea, 'Markets', '/markets'),
+                _buildNavItem(
+                    context, LucideIcons.chartArea, 'Markets', '/markets'),
                 const Spacer(),
                 _buildNavItem(context, LucideIcons.newspaper, 'News', '/news'),
                 const Spacer(),
                 _buildNavItem(context, LucideIcons.search, 'Search', '/search'),
                 const Spacer(),
-                _buildNavItem(context, LucideIcons.settings, 'Settings', '/settings'),
+                _buildNavItem(
+                    context, LucideIcons.settings, 'Settings', '/settings'),
               ],
             ),
           ),
@@ -61,7 +66,8 @@ class TranslucentNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(BuildContext context, IconData icon, String label, String route) {
+  Widget _buildNavItem(
+      BuildContext context, IconData icon, String label, String route) {
     final bool isActive = currentRoute == route;
     return GestureDetector(
       onTap: () {
@@ -88,4 +94,4 @@ class TranslucentNavBar extends StatelessWidget {
       ),
     );
   }
-} 
+}
