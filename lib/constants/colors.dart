@@ -9,5 +9,6 @@ class AppColors {
   static Color shadowColor = Color.fromRGBO(224, 224, 224, 0.3);
   static Color inactiveIcon = Color(0xFF757575);
   static Color activeIcon = Color(0xFF4A90E2);
-  
+  static Color chartDownTrend = Color(0xFFD50000);
+  static Color chartUpTrend = Color(0xFF00E676);
 }
