@@ -9,6 +9,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http;
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:intl/intl.dart';
 
 class MarketsScreen extends StatefulWidget {
   const MarketsScreen({super.key});
@@ -39,17 +40,33 @@ class _MarketsScreenState extends State<MarketsScreen> {
     }
   }
 
+  String formatPrice(double price) {
+    if (price < 1) {
+      return '\$$price';
+    }
+    final NumberFormat numberFormat = NumberFormat("#,##0.00", "en_US");
+    return '\$${numberFormat.format(price)}';
+  }
+
+  String formatSymbol(String symbol) {
+    if (symbol.length > 7) {
+      return '${symbol.substring(0, 7)}...';
+    }
+    return symbol;
+  }
+
   Future<List<dynamic>> fetchCoins() async {
     final apiKey = '${dotenv.env['COINGECKO_API_KEY']}';
-    String url = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&sparkline=true&price_change_percentage=7d';
+    String url =
+        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&sparkline=true&price_change_percentage=7d';
     final uri = Uri.parse(url);
 
     try {
-      final response =
-          await http.get(uri, headers: {'x_cg_demo_api_key': apiKey, 'accept': 'application/json'});
+      final response = await http.get(uri,
+          headers: {'x_cg_demo_api_key': apiKey, 'accept': 'application/json'});
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
-        debugPrint(data.toString());
+        // debugPrint(data.toString());
         return data;
       } else {
         throw Exception('Fialed to load coins: ${response.statusCode}');
@@ -176,7 +193,10 @@ class _MarketsScreenState extends State<MarketsScreen> {
               future: fetchCoins(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator( color: AppColors.appColor,));
+                  return Center(
+                      child: CircularProgressIndicator(
+                    color: AppColors.appColor,
+                  ));
                 } else if (snapshot.hasError) {
                   return Center(
                     child: Text(
@@ -189,38 +209,88 @@ class _MarketsScreenState extends State<MarketsScreen> {
                   return ListView.builder(
                     itemCount: coins.length,
                     itemBuilder: (context, index) {
-                      final upTrend = coins[index]['price_change_percentage_24h'] > 0;
-                      final chartColor = upTrend ? AppColors.chartUpTrend : AppColors.chartDownTrend;
+                      final upTrend =
+                          coins[index]['price_change_percentage_24h'] > 0;
+                      final chartColor = upTrend
+                          ? AppColors.chartUpTrend
+                          : AppColors.chartDownTrend;
                       return Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20.sp, vertical: 10.sp),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 15.sp, vertical: 8.sp),
                         child: SizedBox(
                           height: 50.sp,
                           child: Row(
-                            spacing: 20,
-                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            spacing: 9.sp,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Text(coins[index]['market_cap_rank'].toString()),
-                              Image.network(coins[index]['image'], height: 25.sp,),
+                               SizedBox(),
+                              Image.network(
+                                coins[index]['image'],
+                                height: 26.sp,
+                              ),
                               Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(coins[index]['symbol'].toUpperCase()),
-                                   Text('\$${coins[index]['current_price'].toString()}'),
+                                  Text(
+                                    formatSymbol(
+                                        coins[index]['symbol'].toUpperCase()),
+                                    style: TextStyle(
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    formatMarketCap(
+                                        coins[index]['market_cap'].toDouble()),
+                                    style: TextStyle(
+                                      color: AppColors.inactiveIcon,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 13.sp,
+                                    ),
+                                  ),
                                 ],
                               ),
                               Expanded(
                                 child: Text(
-                                  formatMarketCap(coins[index]['market_cap'].toDouble()),
+                                  textAlign: TextAlign.end,
+                                  formatPrice(
+                                      coins[index]['current_price'].toDouble()),
                                   style: TextStyle(
-                                    color: AppColors.inactiveIcon,
-                                    fontSize: 12.sp,
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w600,
+                                    // color: AppColors.inactiveIcon,
                                   ),
                                 ),
                               ),
+                              Row(
+                                children: [
+                                  Text(
+                                    '${coins[index]['price_change_percentage_24h'].toStringAsFixed(2)}%',
+                                    style: TextStyle(
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: upTrend
+                                          ? AppColors.chartUpTrend
+                                          : AppColors.chartDownTrend,
+                                    ),
+                                  ),
+                                  Icon(
+                                    upTrend
+                                        ? LucideIcons.arrowUp
+                                        : LucideIcons.arrowDown,
+                                    size: 12.sp,
+                                    color: upTrend
+                                        ? AppColors.chartUpTrend
+                                        : AppColors.chartDownTrend,
+                                  ),
+                                ],
+                              ),
                               SizedBox(
                                 height: 25.sp,
-                                width: 50.sp,
+                                width: 60.sp,
                                 child: Sparkline(
                                   lineColor: chartColor,
                                   lineGradient: LinearGradient(
@@ -234,7 +304,8 @@ class _MarketsScreenState extends State<MarketsScreen> {
                                   fillColor: chartColor.withValues(alpha: 0.1),
                                   fillMode: FillMode.below,
                                   data: List<double>.from(
-                                    coins[index]['sparkline_in_7d']['price'].map((e) => e.toDouble()),
+                                    coins[index]['sparkline_in_7d']['price']
+                                        .map((e) => e.toDouble()),
                                   ),
                                 ),
                               ),
