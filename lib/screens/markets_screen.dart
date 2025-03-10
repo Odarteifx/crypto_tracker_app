@@ -40,7 +40,7 @@ class _MarketsScreenState extends State<MarketsScreen> {
   }
 
   Future<List<dynamic>> fetchCoins() async {
-    final apiKey = 'CG-Pma3VxhM2G1smijiQTM4f8fb';
+    final apiKey = '${dotenv.env['COINGECKO_API_KEY']}';
     String url = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&sparkline=true&price_change_percentage=7d';
     final uri = Uri.parse(url);
 
