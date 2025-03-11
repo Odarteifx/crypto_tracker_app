@@ -1,3 +1,5 @@
+import 'package:crypto_tracker_app/models/coins.dart';
+import 'package:crypto_tracker_app/screens/coin_details_screen.dart';
 import 'package:crypto_tracker_app/screens/markets_screen.dart';
 import 'package:crypto_tracker_app/screens/news_screen.dart';
 import 'package:crypto_tracker_app/screens/onboarding.dart';
@@ -12,7 +14,7 @@ final GoRouter router = GoRouter(
       builder: (context, state) => CryptoOnboarding(),
     ),
     GoRoute(
-      path: '/markets', 
+      path: '/markets',
       builder: (context, state) => MarketsScreen(),
     ),
     GoRoute(
@@ -27,5 +29,9 @@ final GoRouter router = GoRouter(
       path: '/settings',
       builder: (context, state) => SettingsScreen(),
     ),
+    GoRoute(
+      path: '/coinDetails',
+      builder: (context, state) => CoinDetails(coin: state.extra as CoinModel),
+    )
   ],
 );
