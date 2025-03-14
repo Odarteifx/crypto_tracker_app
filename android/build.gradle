@@ -17,13 +17,13 @@ tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
 
-android {
-    ndkVersion "25.2.9519653"
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
-    }
-}
+//android {
+//    ndkVersion "25.2.9519653"
+//    compileOptions {
+//        sourceCompatibility JavaVersion.VERSION_11
+//        targetCompatibility JavaVersion.VERSION_11
+//    }
+//}
 
 buildscript {
     ext.kotlin_version = '1.9.0'
@@ -32,6 +32,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
+         classpath 'com.android.tools.build:gradle:7.3.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
