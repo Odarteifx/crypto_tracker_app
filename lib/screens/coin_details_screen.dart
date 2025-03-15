@@ -20,8 +20,15 @@ class CoinDetails extends StatefulWidget {
 class _CoinDetailsState extends State<CoinDetails> {
   Future<Map<String, dynamic>?>? _coinsFuture;
   Map<String, dynamic>? coinDetails;
-  bool swapCurrency = true;
+  bool swapCurrency = false;
   bool priceChangePercent = true;
+
+  int _selectedTabIndex = 0;
+  final List<String> _tabs = ['24H', '7D', '1M', '1Y', 'Max'];
+  final Map<IconData, String> chartType = {
+    LucideIcons.chartSpline : 'Price',
+    LucideIcons.chartCandlestick : 'Price',
+  };
 
   String formatPrice(price) {
     if (price < 1) {
@@ -38,6 +45,42 @@ class _CoinDetailsState extends State<CoinDetails> {
       return 32.sp;
     } else {
       return 40.sp;
+    }
+  }
+
+  priceWidth(price) {
+    if (price.length <= 5) {
+      return 80.sp;
+    } else if (price.length >= 6 && price.length <= 9) {
+      return 120.sp;
+    } else if (price.length >= 10) {
+      return 150.sp;
+    } else {
+      200.sp;
+    }
+  }
+
+  String formatBtcNumber(double price) {
+    if (price == 0) return "0.00";
+
+    if (price < 0.000001) {
+      return price
+          .toStringAsFixed(8); // Show 8 decimal places for very small numbers
+    } else {
+      return price.toString(); // Show 2 decimal places for regular numbers
+    }
+  }
+
+  percentagePriceformat(price) {
+    final ppf = price.toString();
+    if (price < 1 && ppf.length <= 9) {
+      return '\$$price';
+    } else if (price < 1 && price > -1 && ppf.length > 9) {
+      final NumberFormat numberFormat = NumberFormat("#,##0.00000", "en_US");
+      return '\$${numberFormat.format(price)}';
+    } else {
+      final NumberFormat numberFormat = NumberFormat("#,##0.00", "en_US");
+      return '\$${numberFormat.format(price)}';
     }
   }
 
@@ -121,7 +164,7 @@ class _CoinDetailsState extends State<CoinDetails> {
                     ],
                   ),
                   Row(
-                    spacing: 8.sp,
+                    spacing: 4.sp,
                     children: [
                       ShadIconButton.ghost(
                         icon: Icon(
@@ -144,56 +187,62 @@ class _CoinDetailsState extends State<CoinDetails> {
                       ),
                       ShadIconButton.ghost(
                         icon: Icon(
-                          Icons.share,
+                          LucideIcons.squareArrowOutUpRight,
                           color: AppColors.inactiveIcon,
                           size: 20.sp,
                         ),
                         width: 30.sp,
-                        height: 30.sp,
+                        height: 33.sp,
                       )
                     ],
                   )
                 ],
               ),
             ),
-            RefreshIndicator(
-              onRefresh: _refreshCoin,
-              child: FutureBuilder(
-                future: _coinsFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Expanded(
-                      child: Center(
-                          child: CircularProgressIndicator(
-                        color: AppColors.appColor,
-                      )),
-                    );
-                  } else if (snapshot.hasError) {
-                    return Expanded(
-                      child: Center(
-                        child: Text('Error: ${snapshot.error}'),
-                      ),
-                    );
-                  } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                    final coin = snapshot.data!;
 
-                    final price = coin['market_data']['current_price']['usd'];
-                    final btcPrice =
-                        coin['market_data']['current_price']['btc'];
-                    final int marketRank = coin['market_cap_rank'];
-                    final percentageChange =
-                        coin['market_data']['price_change_percentage_24h'];
-                      final  priceChange = coin['market_data']['price_change_24h']; 
-                    final upTrend = percentageChange > 0;
-                    final trendColor = upTrend
-                        ? AppColors.chartUpTrend
-                        : AppColors.chartDownTrend;
-                    final trendIcon =
-                        upTrend ? LucideIcons.arrowUp : LucideIcons.arrowDown;
-                    return Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.sp),
-                      child: Column(
-                        children: [
+            // Add refreshIndicator later
+            FutureBuilder(
+              future: _coinsFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Expanded(
+                    child: Center(
+                        child: CircularProgressIndicator(
+                      color: AppColors.appColor,
+                    )),
+                  );
+                } else if (snapshot.hasError) {
+                  return Expanded(
+                    child: Center(
+                      child: Text('Error: ${snapshot.error}'),
+                    ),
+                  );
+                } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                  final coin = snapshot.data!;
+
+                  final price = coin['market_data']['current_price']['usd'];
+                  final btcPrice = coin['market_data']['current_price']['btc'];
+                  final int marketRank = coin['market_cap_rank'];
+                  final percentageChange =
+                      coin['market_data']['price_change_percentage_24h'];
+                  final priceChange = coin['market_data']['price_change_24h'];
+                  final priceChangeBtc = coin['market_data']
+                      ['price_change_24h_in_currency']['btc'];
+                  final priceChangeBtcPercent = coin['market_data']
+                      ['price_change_percentage_24h_in_currency']['btc'];
+                  final upTrend = percentageChange > 0;
+                  final trendColor = upTrend
+                      ? AppColors.chartUpTrend
+                      : AppColors.chartDownTrend;
+                  final trendIcon =
+                      upTrend ? LucideIcons.arrowUp : LucideIcons.arrowDown;
+
+                  return Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 15.sp),
+                    child: Column(
+                      spacing: 10.sp,
+                      children: [
+                        Column(children: [
                           Row(
                             children: [
                               Text(
@@ -271,7 +320,19 @@ class _CoinDetailsState extends State<CoinDetails> {
                                 },
                                 child: Container(
                                   height: 35.sp,
-                                  width:  priceChangePercent ? 70.sp : 120.sp,
+                                  width: swapCurrency
+                                      ? (priceChangePercent
+                                          ? 70.sp
+                                          : priceWidth(priceChangePercent
+                                              ? '${priceChangeBtcPercent.toStringAsFixed(2)}%'
+                                              : percentagePriceformat(
+                                                  priceChangeBtc)))
+                                      : (priceChangePercent
+                                          ? 70.sp
+                                          : priceWidth(priceChangePercent
+                                              ? '${percentageChange.toStringAsFixed(2)}%'
+                                              : percentagePriceformat(
+                                                  priceChange))),
                                   decoration: BoxDecoration(
                                     color: trendColor,
                                     borderRadius: BorderRadius.circular(6.sp),
@@ -285,7 +346,14 @@ class _CoinDetailsState extends State<CoinDetails> {
                                         size: 18.sp,
                                       ),
                                       Text(
-                                       priceChangePercent? '${percentageChange.toStringAsFixed(2)}%' : formatPrice(priceChange) ,
+                                        swapCurrency
+                                            ? (priceChangePercent
+                                                ? '${priceChangeBtcPercent.toStringAsFixed(2)}%'
+                                                : '${formatBtcNumber(priceChangeBtc)} ₿')
+                                            : (priceChangePercent
+                                                ? '${percentageChange.toStringAsFixed(2)}%'
+                                                : percentagePriceformat(
+                                                    priceChange)),
                                         style: TextStyle(
                                             color: AppColors.backgroundColor,
                                             fontSize: 13.sp,
@@ -297,16 +365,106 @@ class _CoinDetailsState extends State<CoinDetails> {
                               )
                             ],
                           )
-                        ],
-                      ),
-                    );
-                  } else {
-                    return const Center(child: Text('No data available'));
-                  }
-                },
-              ),
+                        ]),
+                        Container(
+                          height: 220.sp,
+                          decoration: BoxDecoration(
+                              color: AppColors.shadowColor,
+                              borderRadius: BorderRadius.circular(10.r)),
+                          child: Center(child: Text('chart here')),
+                        ),
+                        Container(
+                          height: 45.sp,
+                          decoration: BoxDecoration(
+                              color: AppColors.shadowColor,
+                              borderRadius: BorderRadius.circular(8.r)),
+                          child: Row(
+                            children: [
+                              ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: 105.sp,
+                                ),
+                                child: ShadSelect<dynamic>(
+                                    initialValue: LucideIcons.chartSpline,
+                                    options: [
+                                      ShadOption(value: LucideIcons.chartCandlestick, child: Row(
+                                        spacing: 3.sp,
+                                        children: [
+                                          Text('Price'),
+                                          Icon(LucideIcons.chartCandlestick)
+                                        ],
+                                      )),
+                                      ShadOption(value: LucideIcons.chartSpline, child: Row(
+                                        spacing: 3.sp,
+                                        children: [
+                                          Text('Price'),
+                                          Icon(LucideIcons.chartSpline)
+                                        ],
+                                      )),
+                                      ShadOption(value: LucideIcons.baby, child: Text('Market Cap'))
+                                    ],
+                                    selectedOptionBuilder: (context, value) =>
+                                      Icon(value)),
+                              ),
+                              SizedBox(
+                                width: 255.sp,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemBuilder: (context, index) {
+                                    return _buildTab(index);
+                                  },
+                                  itemCount: _tabs.length,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  return const Center(child: Text('No data available'));
+                }
+              },
             )
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTab(int index) {
+    final isSelected = _selectedTabIndex == index;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedTabIndex = index;
+        });
+      },
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 6.sp),
+        child: Container(
+          width: 45.sp,
+          margin: EdgeInsets.symmetric(horizontal: 3.sp),
+          decoration: BoxDecoration(
+              color: isSelected ? AppColors.appColor : Colors.transparent,
+              borderRadius: BorderRadius.circular(10.r)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _tabs[index],
+                style: TextStyle(
+                  color: isSelected
+                      ? AppColors.backgroundColor
+                      : AppColors.inactiveIcon,
+                  fontSize: 15.sp,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  letterSpacing: -0.3.sp,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
