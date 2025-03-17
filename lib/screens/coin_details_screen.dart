@@ -33,10 +33,19 @@ class _CoinDetailsState extends State<CoinDetails> {
   final Map<String, String> marketPercentage = {
     '24H': 'price_change_percentage_24h',
     '7D': 'price_change_percentage_7d',
-    '14D': ' price_change_percentage_14d',
+    '14D': 'price_change_percentage_14d',
     '30D': 'price_change_percentage_30d',
     '60D': 'price_change_percentage_60d',
-    'YTD': 'price_change_percentage_1',
+    'YTD': 'price_change_percentage_1y',
+  };
+
+  final Map<String, String> marketBtcPercentage = {
+    '24H': 'price_change_percentage_24h_in_currency',
+    '7D': 'price_change_percentage_7d_in_currency',
+    '14D': 'price_change_percentage_14d_in_currency',
+    '30D': 'price_change_percentage_30d_in_currency',
+    '60D': 'price_change_percentage_60d_in_currency',
+    'YTD': 'price_change_percentage_1y_in_currency',
   };
 
   String formatPrice(price) {
@@ -44,6 +53,14 @@ class _CoinDetailsState extends State<CoinDetails> {
       return '\$$price';
     }
     final NumberFormat numberFormat = NumberFormat("#,##0.00", "en_US");
+    return '\$${numberFormat.format(price)}';
+  }
+
+  String formatCapPrice(price) {
+    if (price < 1) {
+      return '\$$price';
+    }
+    final NumberFormat numberFormat = NumberFormat("#,##0", "en_US");
     return '\$${numberFormat.format(price)}';
   }
 
@@ -72,27 +89,36 @@ class _CoinDetailsState extends State<CoinDetails> {
   String formatBtcNumber(price) {
     if (price == 0) return "0.00";
 
-    if (price < 0.000001) {
-      return price
-          .toStringAsFixed(8); // Show 8 decimal places for very small numbers
+    if (price < 0.1) {
+      return price.toStringAsFixed(8);
     } else {
-      final NumberFormat numberFormat = NumberFormat("#,##0", "en_US");
-      return numberFormat
-          .format(price); // Show 2 decimal places for regular numbers
+      return price.toString();
     }
   }
 
-String formatSuppy(double marketCap) {
-    if (marketCap >= 1e12) {
-      return '\$${(marketCap / 1e12).toStringAsFixed(1)} Trillion';
-    } else if (marketCap >= 1e9) {
-      return '\$${(marketCap / 1e9).toStringAsFixed(1)} Billion';
-    } else if (marketCap >= 1e6) {
-      return '\$${(marketCap / 1e6).toStringAsFixed(1)} Million';
+  String formatBtcNumberNew(price) {
+    if (price == 0) return "0.00";
+
+    if (price < 0.1) {
+      return price.toStringAsFixed(8);
     } else {
-      return '\$${marketCap.toStringAsFixed(2)}';
+      final NumberFormat numberFormat = NumberFormat("#,##0", "en_US");
+      return numberFormat.format(price);
     }
   }
+
+  String formatSuppy(double marketCap) {
+    if (marketCap >= 1e12) {
+      return '${(marketCap / 1e12).toStringAsFixed(1)} Trillion';
+    } else if (marketCap >= 1e9) {
+      return '${(marketCap / 1e9).toStringAsFixed(1)} Billion';
+    } else if (marketCap >= 1e6) {
+      return '${(marketCap / 1e6).toStringAsFixed(1)} Million';
+    } else {
+      return marketCap.toStringAsFixed(2);
+    }
+  }
+
   percentagePriceformat(price) {
     final ppf = price.toString();
     if (price < 1 && ppf.length <= 9) {
@@ -242,6 +268,8 @@ String formatSuppy(double marketCap) {
                 } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                   final coin = snapshot.data!;
 
+                  final coinName = coin['id'].toString().capitalize();
+                  final coinSymbol = coin['symbol'].toUpperCase();
                   final price = coin['market_data']['current_price']['usd'];
                   final btcPrice = coin['market_data']['current_price']['btc'];
                   final int marketRank = coin['market_cap_rank'];
@@ -249,37 +277,52 @@ String formatSuppy(double marketCap) {
                   final marketCapUSD = coin['market_data']['market_cap']['usd'];
                   final marketCapBTC = coin['market_data']['market_cap']['btc'];
 
-                  final fDilutedUSD = coin['market_data']['fully_diluted_valuation']['usd'];
-                  final fDilutedBTC = coin['market_data']['fully_diluted_valuation']['btc'];
+                  final fDilutedUSD =
+                      coin['market_data']['fully_diluted_valuation']['usd'];
+                  final fDilutedBTC =
+                      coin['market_data']['fully_diluted_valuation']['btc'];
 
-                  final marketCapFdvRatio = coin['market_data']['market_cap_fdv_ratio'];
+                  final marketCapFdvRatio =
+                      coin['market_data']['market_cap_fdv_ratio'];
 
-                  final totalVolumeBtc = coin['market_data']['total_volume']['btc'];
-                  final totalVolumeUSD = coin['market_data']['total_volume']['usd'];
+                  final totalVolumeBtc =
+                      coin['market_data']['total_volume']['btc'];
+                  final totalVolumeUSD =
+                      coin['market_data']['total_volume']['usd'];
 
-                   final h24Btc = coin['market_data']['high_24h']['btc'];
-                   final l24BTC = coin['market_data']['low_24h']['btc']; 
+                  final h24Btc = coin['market_data']['high_24h']['btc'];
+                  final l24BTC = coin['market_data']['low_24h']['btc'];
                   final h24USD = coin['market_data']['high_24h']['usd'];
-                  final l24USD= coin['market_data']['low_24h']['usd'];
+                  final l24USD = coin['market_data']['low_24h']['usd'];
 
-                   final athBtc = coin['market_data']['ath']['btc'];
-                   final atlBTC = coin['market_data']['atl']['btc']; 
+                  final athBtc = coin['market_data']['ath']['btc'];
+                  final atlBTC = coin['market_data']['atl']['btc'];
                   final athUSD = coin['market_data']['ath']['usd'];
-                  final atlUSD= coin['market_data']['atl']['usd'];
+                  final atlUSD = coin['market_data']['atl']['usd'];
 
-                  final percentageChange = coin['market_data']['price_change_percentage_24h'];
+                  final percentageChange =
+                      coin['market_data']['price_change_percentage_24h'];
 
-                  final circulatingSupply= coin['market_data']['circulating_supply'];
-                  final maxSupply= coin['market_data']['max_supply'];
-                  final totalSupply= coin['market_data']['total_supply'];
+                  final circulatingSupply =
+                      coin['market_data']['circulating_supply'];
+                  final maxSupply = coin['market_data']['max_supply'];
+                  final totalSupply = coin['market_data']['total_supply'];
 
-                   final creationDate = coin['market_data']['genesis_date'];
+                  final creationDate = coin['genesis_date'];
+
+                  cryptoBirth(x) {
+                    DateTime parseTime = DateTime.parse(x);
+                    return DateFormat('dd MMM, yyyy').format(parseTime);
+                  }
 
                   final priceChange = coin['market_data']['price_change_24h'];
-                  final priceChangeBtc = coin['market_data']['price_change_24h_in_currency']['btc'];
-                  final priceChangeBtcPercent = coin['market_data']['price_change_percentage_24h_in_currency']['btc'];
+                  final priceChangeBtc = coin['market_data']
+                      ['price_change_24h_in_currency']['btc'];
+                  final priceChangeBtcPercent = coin['market_data']
+                      ['price_change_percentage_24h_in_currency']['btc'];
                   final upTrend = percentageChange > 0;
 
+                  String coinDescription = coin['description']['en'];
                   return Expanded(
                     child: SingleChildScrollView(
                       child: Padding(
@@ -291,7 +334,7 @@ String formatSuppy(double marketCap) {
                               Row(
                                 children: [
                                   Text(
-                                    coin['id'].toString().capitalize(),
+                                    coinName,
                                     style: TextStyle(
                                         fontSize: 16.sp,
                                         fontWeight: FontWeight.w600,
@@ -322,42 +365,43 @@ String formatSuppy(double marketCap) {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        swapCurrency
-                                            ? '${btcPrice.toString()} ₿'
-                                            : formatPrice(price),
-                                        style: TextStyle(
-                                            fontSize: 25.sp,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      Row(
-                                        spacing: 5.sp,
-                                        children: [
-                                          GestureDetector(
-                                            onTap: () {
-                                              setState(() {
-                                                swapCurrency = !swapCurrency;
-                                              });
-                                            },
-                                            child: Icon(LucideIcons.arrowDownUp,
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        swapCurrency = !swapCurrency;
+                                      });
+                                    },
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          swapCurrency
+                                              ? '${btcPrice.toString()} ₿'
+                                              : formatPrice(price),
+                                          style: TextStyle(
+                                              fontSize: 25.sp,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Row(
+                                          spacing: 5.sp,
+                                          children: [
+                                            Icon(LucideIcons.arrowDownUp,
                                                 color: AppColors.inactiveIcon,
                                                 size: 18.sp),
-                                          ),
-                                          Text(
-                                            swapCurrency
-                                                ? formatPrice(price)
-                                                : '${btcPrice.toString()} ₿',
-                                            style: TextStyle(
-                                                fontSize: 13.sp,
-                                                color: AppColors.inactiveIcon),
-                                          ),
-                                        ],
-                                      )
-                                    ],
+                                            Text(
+                                              swapCurrency
+                                                  ? formatPrice(price)
+                                                  : '${btcPrice.toString()} ₿',
+                                              style: TextStyle(
+                                                  fontSize: 13.sp,
+                                                  color:
+                                                      AppColors.inactiveIcon),
+                                            ),
+                                          ],
+                                        )
+                                      ],
+                                    ),
                                   ),
                                   GestureDetector(
                                     onTap: () {
@@ -490,64 +534,101 @@ String formatSuppy(double marketCap) {
                               decoration: BoxDecoration(
                                   color: AppColors.shadowColor,
                                   borderRadius: BorderRadius.circular(8.sp)),
-                              child: ListView.builder(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: 10.sp,
-                                ),
-                                scrollDirection: Axis.horizontal,
-                                itemCount: marketPercentage.length,
-                                itemBuilder: (context, index) {
-                                  String frame =
-                                      marketPercentage.keys.elementAt(index);
-                                  String framePercentage =
-                                      marketPercentage.values.elementAt(index);
-                                  final marketChangePercentage =
-                                      coin['market_data'][framePercentage];
-                                  final bool marketBullish =
-                                      marketChangePercentage == null
-                                          ? marketChangePercentage == 0
-                                          : marketChangePercentage ==
-                                              marketChangePercentage;
+                              child: Center(
+                                child: ListView.builder(
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: 10.sp,
+                                  ),
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: marketPercentage.length,
+                                  itemBuilder: (context, index) {
+                                    String frame =
+                                        marketPercentage.keys.elementAt(index);
+                                    String framePercentage = marketPercentage
+                                        .values
+                                        .elementAt(index);
+                                    final marketChangePercentage =
+                                        coin['market_data'][framePercentage];
+                                    final bool marketBullish =
+                                        marketChangePercentage == null
+                                            ? marketChangePercentage == 0
+                                            : marketChangePercentage ==
+                                                marketChangePercentage;
 
-                                  return Padding(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: 3.5.sp),
-                                    child: Column(
-                                      spacing: 2.sp,
-                                      children: [
-                                        Text(
-                                          frame,
-                                          style: TextStyle(
-                                              color: AppColors.iconColor,
-                                              fontSize: 13.sp),
-                                        ),
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              size: 14.sp,
-                                              marketIcon(marketChangePercentage,
-                                                  marketBullish),
-                                              color: marketColor(
-                                                  marketChangePercentage,
-                                                  marketBullish),
-                                            ),
-                                            Text(
-                                              marketChangePercentage == null
-                                                  ? '0.0%'
-                                                  : '${marketChangePercentage.toStringAsFixed(2)}%',
-                                              style: TextStyle(
-                                                  color: marketColor(
-                                                      marketChangePercentage,
-                                                      marketBullish),
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 12.sp),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
+                                    String frameBTCPercentage =
+                                        marketBtcPercentage.values
+                                            .elementAt(index);
+                                    final marketBTCChangePercentage =
+                                        coin['market_data'][frameBTCPercentage]
+                                            ['btc'];
+                                    final bool marketBTCBullish =
+                                        marketBTCChangePercentage == null
+                                            ? marketBTCChangePercentage == 0
+                                            : marketBTCChangePercentage ==
+                                                marketBTCChangePercentage;
+
+                                    return Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 4.sp),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        spacing: 2.sp,
+                                        children: [
+                                          Text(
+                                            frame,
+                                            style: TextStyle(
+                                                color: AppColors.iconColor,
+                                                fontSize: 13.sp),
+                                          ),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                size: 12.sp,
+                                                swapCurrency
+                                                    ? marketIcon(
+                                                        marketBTCChangePercentage,
+                                                        marketBTCBullish)
+                                                    : marketIcon(
+                                                        marketChangePercentage,
+                                                        marketBullish),
+                                                color: swapCurrency
+                                                    ? marketColor(
+                                                        marketBTCChangePercentage,
+                                                        marketBTCBullish)
+                                                    : marketColor(
+                                                        marketChangePercentage,
+                                                        marketBullish),
+                                              ),
+                                              Text(
+                                                swapCurrency
+                                                    ? marketBTCChangePercentage ==
+                                                            null
+                                                        ? '0.0%'
+                                                        : '${marketBTCChangePercentage.toStringAsFixed(2)}%'
+                                                    : marketChangePercentage ==
+                                                            null
+                                                        ? '0.0%'
+                                                        : '${marketChangePercentage.toStringAsFixed(2)}%',
+                                                style: TextStyle(
+                                                    color: swapCurrency
+                                                        ? marketColor(
+                                                            marketBTCChangePercentage,
+                                                            marketBTCBullish)
+                                                        : marketColor(
+                                                            marketChangePercentage,
+                                                            marketBullish),
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 12.sp),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                             Container(
@@ -595,8 +676,8 @@ String formatSuppy(double marketCap) {
                                           ),
                                           Text(
                                             swapCurrency
-                                                ? '${formatBtcNumber(marketCapBTC)} ₿'
-                                                : formatPrice(marketCapUSD),
+                                                ? '${formatBtcNumberNew(marketCapBTC)} ₿'
+                                                : formatCapPrice(marketCapUSD),
                                             style: TextStyle(
                                                 color: AppColors.iconColor),
                                           )
@@ -618,8 +699,8 @@ String formatSuppy(double marketCap) {
                                           ),
                                           Text(
                                             swapCurrency
-                                                ? '${formatBtcNumber(fDilutedBTC)} ₿'
-                                                : formatPrice(fDilutedUSD),
+                                                ? '${formatBtcNumberNew(fDilutedBTC)} ₿'
+                                                : formatCapPrice(fDilutedUSD),
                                             style: TextStyle(
                                                 color: AppColors.iconColor),
                                           )
@@ -664,7 +745,8 @@ String formatSuppy(double marketCap) {
                                           Text(
                                             swapCurrency
                                                 ? '${formatBtcNumber(totalVolumeBtc)} ₿'
-                                                : formatPrice(totalVolumeUSD),
+                                                : formatCapPrice(
+                                                    totalVolumeUSD),
                                             style: TextStyle(
                                                 color: AppColors.iconColor),
                                           )
@@ -773,7 +855,9 @@ String formatSuppy(double marketCap) {
                                                 color: AppColors.inactiveIcon),
                                           ),
                                           Text(
-                                            maxSupply ==null ? maxSupply.toString() : formatSuppy(maxSupply),
+                                            maxSupply == null
+                                                ? '--'
+                                                : formatSuppy(maxSupply),
                                             style: TextStyle(
                                                 color: AppColors.iconColor),
                                           )
@@ -840,7 +924,10 @@ String formatSuppy(double marketCap) {
                                                 color: AppColors.inactiveIcon),
                                           ),
                                           Text(
-                                            creationDate.toString(),
+                                            creationDate == null
+                                                ? '--'
+                                                : cryptoBirth(creationDate)
+                                                    .toString(),
                                             style: TextStyle(
                                                 color: AppColors.iconColor),
                                           )
@@ -851,6 +938,67 @@ String formatSuppy(double marketCap) {
                                 ),
                               ),
                             ),
+                            SizedBox(),
+                            Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'About $coinName',
+                                      style: TextStyle(
+                                          fontSize: 16.sp,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.iconColor),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () {
+                                       showShadSheet(context: context, builder: (context) {
+                                         return Padding(
+                                           padding: EdgeInsets.only(top: 55.sp),
+                                           child: ShadSheet(
+                                           scrollable: false,
+                                            title: Text('About $coinName'),
+                                            description: Padding(
+                                              padding: EdgeInsets.symmetric(vertical: 8.sp),
+                                              child: Text('What is $coinName ($coinSymbol)?', textAlign: TextAlign.start,),
+                                            ),
+                                            descriptionStyle: TextStyle(
+                                              fontSize: 16.sp,
+                                              color: AppColors.iconColor,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(0),
+                                              child: SingleChildScrollView(
+                                                scrollDirection: Axis.vertical,
+                                                child: Text(coinDescription, style: TextStyle(color: AppColors.inactiveIcon, fontSize: 15.sp),)),
+                                            ),
+                                                                                   ),
+                                         );
+                                       },);
+
+                                      },
+                                      child: Text('Read More', style: TextStyle(color: AppColors.appColor,)))
+                                  ],
+                                ),
+                                Divider(),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 8.sp),
+                                  child: Row(
+                                    children: [
+                                      Text('What is $coinName ($coinSymbol)?', textAlign: TextAlign.left, style: TextStyle(color: AppColors.inactiveIcon, fontWeight: FontWeight.w600, fontSize: 14.sp),),
+                                    ],
+                                  ),
+                                ),
+                              
+                                Text(coinDescription,
+                                 maxLines: 5,
+                                 overflow: TextOverflow.ellipsis,
+                                 style: TextStyle(color: AppColors.iconColor,),)
+                              ],
+                            )
                           ],
                         ),
                       ),
