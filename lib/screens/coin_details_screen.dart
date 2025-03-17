@@ -958,6 +958,7 @@ class _CoinDetailsState extends State<CoinDetails> {
                                          return Padding(
                                            padding: EdgeInsets.only(top: 55.sp),
                                            child: ShadSheet(
+                                             backgroundColor: AppColors.backgroundColor,
                                            scrollable: false,
                                             title: Text('About $coinName'),
                                             description: Padding(
@@ -969,12 +970,9 @@ class _CoinDetailsState extends State<CoinDetails> {
                                               color: AppColors.iconColor,
                                               fontWeight: FontWeight.w600,
                                             ),
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(0),
-                                              child: SingleChildScrollView(
-                                                scrollDirection: Axis.vertical,
-                                                child: Text(coinDescription, style: TextStyle(color: AppColors.inactiveIcon, fontSize: 15.sp),)),
-                                            ),
+                                            child: SingleChildScrollView(
+                                              scrollDirection: Axis.vertical,
+                                              child: Text(coinDescription, style: TextStyle(color: AppColors.inactiveIcon, fontSize: 15.sp),)),
                                                                                    ),
                                          );
                                        },);

@@ -4,22 +4,25 @@ import 'package:chart_sparkline/chart_sparkline.dart';
 import 'package:crypto_tracker_app/constants/assets.dart';
 import 'package:crypto_tracker_app/constants/colors.dart';
 import 'package:crypto_tracker_app/models/coins.dart';
+import 'package:crypto_tracker_app/providers/coin_provider.dart';
+import 'package:crypto_tracker_app/screens/coin_converter_screen.dart';
 import 'package:crypto_tracker_app/widgets/translucent_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:shadcn_ui/shadcn_ui.dart';
 
-class MarketsScreen extends StatefulWidget {
+class MarketsScreen extends ConsumerStatefulWidget {
   const MarketsScreen({super.key});
 
   @override
-  State<MarketsScreen> createState() => _MarketsScreenState();
+  ConsumerState<MarketsScreen> createState() => _MarketsScreenState();
 }
 
-class _MarketsScreenState extends State<MarketsScreen> {
+class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   int _selectedTabIndex = 0;
   Future<List<CoinModel>>? _coinsFuture;
   final List<String> _tabs = [
@@ -57,46 +60,47 @@ class _MarketsScreenState extends State<MarketsScreen> {
     return symbol;
   }
 
-  List<CoinModel> coinMarkets = [];
+  // List<CoinModel> coinMarkets = [];
 
-  Future<List<CoinModel>> fetchCoins() async {
-    final apiKey = '${dotenv.env['COINGECKO_API_KEY']}';
-    String url =
-        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&sparkline=true&price_change_percentage=7d';
-    final uri = Uri.parse(url);
+  // Future<List<CoinModel>> fetchCoins() async {
+  //   final apiKey = '${dotenv.env['COINGECKO_API_KEY']}';
+  //   String url =
+  //       'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&sparkline=true&price_change_percentage=7d';
+  //   final uri = Uri.parse(url);
 
-    try {
-      final response = await http.get(uri,
-          headers: {'x_cg_demo_api_key': apiKey, 'accept': 'application/json'});
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonData = jsonDecode(response.body);
-        final List<CoinModel> data =
-            jsonData.map((json) => CoinModel.fromJson(json)).toList();
+  //   try {
+  //     final response = await http.get(uri,
+  //         headers: {'x_cg_demo_api_key': apiKey, 'accept': 'application/json'});
+  //     if (response.statusCode == 200) {
+  //       final List<dynamic> jsonData = jsonDecode(response.body);
+  //       final List<CoinModel> data =
+  //           jsonData.map((json) => CoinModel.fromJson(json)).toList();
 
-        setState(() {
-          coinMarkets = data;
-        });
+  //       setState(() {
+  //         coinMarkets = data;
+  //       });
 
-        return coinMarkets;
-      } else {
-        throw Exception('Failed to load coins: ${response.statusCode}');
-      }
-    } catch (e) {
-      debugPrint(e.toString());
-      throw Exception('Error fetching coins: $e');
-    }
-  }
+  //       return coinMarkets;
+  //     } else {
+  //       throw Exception('Failed to load coins: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     debugPrint(e.toString());
+  //     throw Exception('Error fetching coins: $e');
+  //   }
+  // }
 
   Future<void> _refreshCoins() async {
     setState(() {
-      _coinsFuture = fetchCoins();
+      _coinsFuture = ref.read(coinProvider.notifier).fetchCoins();
     });
   }
 
   @override
   void initState() {
     super.initState();
-    _coinsFuture = fetchCoins();
+    // ref.read(coinProvider.notifier).fetchCoins();
+    _coinsFuture = ref.read(coinProvider.notifier).fetchCoins();
   }
 
   @override
@@ -121,7 +125,14 @@ class _MarketsScreenState extends State<MarketsScreen> {
                 ),
                 width: 30.sp,
                 height: 30.sp,
-                onPressed: () {}),
+                onPressed: () {
+                  showShadSheet(
+                    context: context,
+                    builder: (context) {
+                      return CoinConverterScreen();
+                    },
+                  );
+                }),
             Padding(
               padding: EdgeInsets.only(right: 15.sp),
               child: ShadIconButton.ghost(
