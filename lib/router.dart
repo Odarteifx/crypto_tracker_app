@@ -1,5 +1,4 @@
 import 'package:crypto_tracker_app/models/coins.dart';
-import 'package:crypto_tracker_app/screens/coin_converter_screen.dart';
 import 'package:crypto_tracker_app/screens/coin_details_screen.dart';
 import 'package:crypto_tracker_app/screens/markets_screen.dart';
 import 'package:crypto_tracker_app/screens/news_screen.dart';
@@ -7,6 +6,8 @@ import 'package:crypto_tracker_app/screens/onboarding.dart';
 import 'package:crypto_tracker_app/screens/search_screen.dart';
 import 'package:crypto_tracker_app/screens/settings_screen.dart';
 import 'package:go_router/go_router.dart';
+
+import 'screens/coin_converter_screen.dart';
 
 final GoRouter router = GoRouter(
   routes: [
@@ -34,6 +35,8 @@ final GoRouter router = GoRouter(
       path: '/coinDetails',
       builder: (context, state) => CoinDetails(coin: state.extra as CoinModel),
     ),
-    
+    GoRoute(
+        path: '/coinConverter',
+        builder: (context, state) => CoinConverterScreen()),
   ],
 );

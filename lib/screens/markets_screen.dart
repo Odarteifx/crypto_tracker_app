@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:chart_sparkline/chart_sparkline.dart';
 import 'package:crypto_tracker_app/constants/assets.dart';
 import 'package:crypto_tracker_app/constants/colors.dart';
@@ -8,11 +6,9 @@ import 'package:crypto_tracker_app/providers/coin_provider.dart';
 import 'package:crypto_tracker_app/screens/coin_converter_screen.dart';
 import 'package:crypto_tracker_app/widgets/translucent_nav_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart' as http;
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 class MarketsScreen extends ConsumerStatefulWidget {
@@ -59,47 +55,14 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
     }
     return symbol;
   }
-
-  // List<CoinModel> coinMarkets = [];
-
-  // Future<List<CoinModel>> fetchCoins() async {
-  //   final apiKey = '${dotenv.env['COINGECKO_API_KEY']}';
-  //   String url =
-  //       'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&sparkline=true&price_change_percentage=7d';
-  //   final uri = Uri.parse(url);
-
-  //   try {
-  //     final response = await http.get(uri,
-  //         headers: {'x_cg_demo_api_key': apiKey, 'accept': 'application/json'});
-  //     if (response.statusCode == 200) {
-  //       final List<dynamic> jsonData = jsonDecode(response.body);
-  //       final List<CoinModel> data =
-  //           jsonData.map((json) => CoinModel.fromJson(json)).toList();
-
-  //       setState(() {
-  //         coinMarkets = data;
-  //       });
-
-  //       return coinMarkets;
-  //     } else {
-  //       throw Exception('Failed to load coins: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     debugPrint(e.toString());
-  //     throw Exception('Error fetching coins: $e');
-  //   }
-  // }
-
   Future<void> _refreshCoins() async {
-    setState(() {
       _coinsFuture = ref.read(coinProvider.notifier).fetchCoins();
-    });
+      debugPrint('Refreshed Successful');
   }
 
   @override
   void initState() {
     super.initState();
-    // ref.read(coinProvider.notifier).fetchCoins();
     _coinsFuture = ref.read(coinProvider.notifier).fetchCoins();
   }
 
@@ -126,12 +89,7 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                 width: 30.sp,
                 height: 30.sp,
                 onPressed: () {
-                  showShadSheet(
-                    context: context,
-                    builder: (context) {
-                      return CoinConverterScreen();
-                    },
-                  );
+                 context.push('/coinConverter'); 
                 }),
             Padding(
               padding: EdgeInsets.only(right: 15.sp),
