@@ -1,6 +1,5 @@
 import 'package:crypto_tracker_app/models/coins.dart';
 import 'package:crypto_tracker_app/providers/coin_provider.dart';
-import 'package:crypto_tracker_app/screens/coin_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -23,6 +22,9 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
   String outputCoinName = 'Select Coin';
   CoinModel? selectedCoin;
   CoinModel? outputCoin;
+  String inputAmountString = ''; // Store input as a string
+  double inputAmount = 0;
+  double outputAmount = 0;
 
   @override
   void initState() {
@@ -84,7 +86,7 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
                               context: context,
                               builder: (context) {
                                 return coinOption(
-                                    selectedCoin, selectedCoinName);
+                                    selectedCoin, selectedCoinName, true);
                               },
                             );
                           },
@@ -108,7 +110,8 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
                             ],
                           ),
                         ),
-                        Text('Unit')
+                        Text(inputAmountString.isEmpty ? '0.00' : inputAmountString,
+                            style: TextStyle(fontSize: 25.sp))
                       ],
                     ),
                   ),
@@ -126,7 +129,8 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
                             showShadSheet(
                               context: context,
                               builder: (context) {
-                                return coinOption(outputCoin, outputCoinName);
+                                return coinOption(outputCoin, outputCoinName,
+                                    false);
                               },
                             );
                           },
@@ -134,7 +138,9 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
                             spacing: 10.sp,
                             children: [
                               outputCoin == null
-                                  ? ShadAvatar('src', backgroundColor: AppColors.backgroundColor,)
+                                  ? ShadAvatar('src',
+                                      backgroundColor:
+                                          AppColors.backgroundColor)
                                   : Image.network(
                                       outputCoin!.image,
                                       height: 30.sp,
@@ -150,7 +156,8 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
                             ],
                           ),
                         ),
-                        Text('Unit')
+                        Text(outputAmount.toStringAsFixed(8),
+                            style: TextStyle(fontSize: 25.sp))
                       ],
                     ),
                   ),
@@ -167,12 +174,15 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
                     children: [
                       CustomCalcButtn(
                         num: 1,
+                        onTap: (value) => updateInputAmount(value),
                       ),
                       CustomCalcButtn(
                         num: 2,
+                        onTap: (value) => updateInputAmount(value),
                       ),
                       CustomCalcButtn(
                         num: 3,
+                        onTap: (value) => updateInputAmount(value),
                       )
                     ],
                   ),
@@ -181,12 +191,15 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
                     children: [
                       CustomCalcButtn(
                         num: 4,
+                        onTap: (value) => updateInputAmount(value),
                       ),
                       CustomCalcButtn(
                         num: 5,
+                        onTap: (value) => updateInputAmount(value),
                       ),
                       CustomCalcButtn(
                         num: 6,
+                        onTap: (value) => updateInputAmount(value),
                       )
                     ],
                   ),
@@ -195,12 +208,15 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
                     children: [
                       CustomCalcButtn(
                         num: 7,
+                        onTap: (value) => updateInputAmount(value),
                       ),
                       CustomCalcButtn(
                         num: 8,
+                        onTap: (value) => updateInputAmount(value),
                       ),
                       CustomCalcButtn(
                         num: 9,
+                        onTap: (value) => updateInputAmount(value),
                       )
                     ],
                   ),
@@ -209,11 +225,15 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
                     children: [
                       CustomCalcButtn(
                         num: '.',
+                        onTap: (value) => updateInputAmount(value),
                       ),
                       CustomCalcButtn(
                         num: 0,
+                        onTap: (value) => updateInputAmount(value),
                       ),
-                      CustomCalcButtn(num: '<')
+                      CustomCalcButtn(
+                          num: '<',
+                          onTap: (value) => updateInputAmount(value))
                     ],
                   )
                 ],
@@ -225,11 +245,12 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
     );
   }
 
-  ShadSheet coinOption(CoinModel? coinentry, String name) {
+  ShadSheet coinOption(CoinModel? coinentry, String name, bool isInput) {
     return ShadSheet(
+      backgroundColor: AppColors.backgroundColor,
       title: Text('Select Coin'),
       child: SizedBox(
-        height: 700.sp,
+        height: 600.sp,
         child: Column(
           children: [
             FutureBuilder(
@@ -261,13 +282,14 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
                             GestureDetector(
                               onTap: () {
                                 setState(() {
-                                  if (coinentry == selectedCoin) {
+                                  if (isInput) {
                                     selectedCoin = coin[index];
                                     selectedCoinName = coin[index].name;
                                   } else {
                                     outputCoin = coin[index];
                                     outputCoinName = coin[index].name;
                                   }
+                                  _calculateOutput();
                                 });
                                 Navigator.pop(context);
                               },
@@ -299,13 +321,41 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
       ),
     );
   }
+
+  void updateInputAmount(dynamic value) {
+    setState(() {
+      if (value == '<') {
+        if (inputAmountString.isNotEmpty) {
+          inputAmountString =
+              inputAmountString.substring(0, inputAmountString.length - 1);
+        }
+      } else {
+        inputAmountString = '$inputAmountString${value.toString()}';
+      }
+
+      // Parse the input string to a double
+      inputAmount = double.tryParse(inputAmountString) ?? 0;
+      _calculateOutput();
+    });
+  }
+
+  void _calculateOutput() {
+    if (selectedCoin != null && outputCoin != null) {
+      setState(() {
+        outputAmount =
+            (inputAmount * selectedCoin!.currentPrice) / outputCoin!.currentPrice;
+      });
+    }
+  }
 }
 
 class CustomCalcButtn extends StatelessWidget {
   final dynamic num;
+  final Function(dynamic) onTap;
   const CustomCalcButtn({
     super.key,
     required this.num,
+    required this.onTap,
   });
 
   @override
@@ -315,8 +365,7 @@ class CustomCalcButtn extends StatelessWidget {
       decoration: ShadDecoration(
           border: ShadBorder.all(radius: BorderRadius.circular(50))),
       onPressed: () {
-        final output = num.toString();
-        debugPrint(output);
+        onTap(num);
       },
       pressedBackgroundColor: AppColors.shadowColor,
       width: 90.sp,
