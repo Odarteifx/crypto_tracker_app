@@ -22,9 +22,17 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
   String outputCoinName = 'Select Coin';
   CoinModel? selectedCoin;
   CoinModel? outputCoin;
-  String inputAmountString = ''; // Store input as a string
+  String inputAmountString = '';
   double inputAmount = 0;
   double outputAmount = 0;
+
+  String formatPrice(price) {
+    if (price < 1) {
+      return '$price';
+    }
+    final NumberFormat numberFormat = NumberFormat("#,##0.00", "en_US");
+    return numberFormat.format(price);
+  }
 
   @override
   void initState() {
@@ -110,7 +118,10 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
                             ],
                           ),
                         ),
-                        Text(inputAmountString.isEmpty ? '0.00' : inputAmountString,
+                        Text(
+                            inputAmountString.isEmpty
+                                ? '0.00'
+                                : inputAmountString,
                             style: TextStyle(fontSize: 25.sp))
                       ],
                     ),
@@ -129,8 +140,8 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
                             showShadSheet(
                               context: context,
                               builder: (context) {
-                                return coinOption(outputCoin, outputCoinName,
-                                    false);
+                                return coinOption(
+                                    outputCoin, outputCoinName, false);
                               },
                             );
                           },
@@ -156,7 +167,10 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
                             ],
                           ),
                         ),
-                        Text(outputAmount.toStringAsFixed(8),
+                        Text(
+                            outputAmount == 0
+                                ? '0.00'
+                                : formatPrice(outputAmount),
                             style: TextStyle(fontSize: 25.sp))
                       ],
                     ),
@@ -232,8 +246,7 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
                         onTap: (value) => updateInputAmount(value),
                       ),
                       CustomCalcButtn(
-                          num: '<',
-                          onTap: (value) => updateInputAmount(value))
+                          num: '<', onTap: (value) => updateInputAmount(value))
                     ],
                   )
                 ],
@@ -289,7 +302,7 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
                                     outputCoin = coin[index];
                                     outputCoinName = coin[index].name;
                                   }
-                                  _calculateOutput();
+                                  _calculateOutput(inputAmount);
                                 });
                                 Navigator.pop(context);
                               },
@@ -329,21 +342,30 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
           inputAmountString =
               inputAmountString.substring(0, inputAmountString.length - 1);
         }
+      } else if (value == '.') {
+        if (!inputAmountString.contains('.')) {
+          inputAmountString += value.toString();
+        }
       } else {
-        inputAmountString = '$inputAmountString${value.toString()}';
+        inputAmountString += value.toString();
       }
 
       // Parse the input string to a double
       inputAmount = double.tryParse(inputAmountString) ?? 0;
-      _calculateOutput();
+      _calculateOutput(inputAmount);
     });
   }
 
-  void _calculateOutput() {
+  void _calculateOutput(double input) {
     if (selectedCoin != null && outputCoin != null) {
+      final result = input * (selectedCoin!.currentPrice / outputCoin!.currentPrice);
+
       setState(() {
-        outputAmount =
-            (inputAmount * selectedCoin!.currentPrice) / outputCoin!.currentPrice;
+        if (result < 1 ) {
+          outputAmount = double.parse(result.toStringAsFixed(8));
+        } else {
+          outputAmount = result;
+        }
       });
     }
   }

@@ -3,7 +3,6 @@ import 'package:crypto_tracker_app/constants/assets.dart';
 import 'package:crypto_tracker_app/constants/colors.dart';
 import 'package:crypto_tracker_app/models/coins.dart';
 import 'package:crypto_tracker_app/providers/coin_provider.dart';
-import 'package:crypto_tracker_app/screens/coin_converter_screen.dart';
 import 'package:crypto_tracker_app/widgets/translucent_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
