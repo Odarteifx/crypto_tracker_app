@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 class CoinDetails extends ConsumerStatefulWidget {
   final CoinModel coin;
@@ -17,9 +18,11 @@ class CoinDetails extends ConsumerStatefulWidget {
 
 class _CoinDetailsState extends ConsumerState<CoinDetails> {
   Future<Map<String, dynamic>?>? _coinsFuture;
+  Future? _coinsChart;
   Map<String, dynamic>? coinDetails;
   bool swapCurrency = false;
   bool priceChangePercent = true;
+  late TooltipBehavior _tooltipBehavior;
 
   int _selectedTabIndex = 0;
   final List<String> _tabs = ['24H', '7D', '1M', '1Y', 'Max'];
@@ -130,15 +133,19 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
     }
   }
 
- 
   @override
   void initState() {
     super.initState();
-    _coinsFuture =ref.read(coinProvider.notifier).getCoinDetails(widget);
+    _coinsFuture = ref.read(coinProvider.notifier).getCoinDetails(widget);
+    _coinsChart =
+        ref.read(coinProvider.notifier).getCoinChart(widget, '365', 'usd');
+    _tooltipBehavior = TooltipBehavior(enable: true);
   }
 
   Future<void> _refreshCoin() async {
-      _coinsFuture = ref.read(coinProvider.notifier).getCoinDetails(widget);
+    _coinsFuture = ref.read(coinProvider.notifier).getCoinDetails(widget);
+     _coinsChart =
+        ref.read(coinProvider.notifier).getCoinChart(widget, '365', 'usd');
   }
 
   @override
@@ -240,61 +247,65 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                       );
                     } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                       final coin = snapshot.data!;
-                
+
                       final coinName = coin['id'].toString().capitalize();
                       final coinSymbol = coin['symbol'].toUpperCase();
                       final price = coin['market_data']['current_price']['usd'];
-                      final btcPrice = coin['market_data']['current_price']['btc'];
+                      final btcPrice =
+                          coin['market_data']['current_price']['btc'];
                       final int marketRank = coin['market_cap_rank'];
-                
-                      final marketCapUSD = coin['market_data']['market_cap']['usd'];
-                      final marketCapBTC = coin['market_data']['market_cap']['btc'];
-                
+
+                      final marketCapUSD =
+                          coin['market_data']['market_cap']['usd'];
+                      final marketCapBTC =
+                          coin['market_data']['market_cap']['btc'];
+
                       final fDilutedUSD =
                           coin['market_data']['fully_diluted_valuation']['usd'];
                       final fDilutedBTC =
                           coin['market_data']['fully_diluted_valuation']['btc'];
-                
+
                       final marketCapFdvRatio =
                           coin['market_data']['market_cap_fdv_ratio'];
-                
+
                       final totalVolumeBtc =
                           coin['market_data']['total_volume']['btc'];
                       final totalVolumeUSD =
                           coin['market_data']['total_volume']['usd'];
-                
+
                       final h24Btc = coin['market_data']['high_24h']['btc'];
                       final l24BTC = coin['market_data']['low_24h']['btc'];
                       final h24USD = coin['market_data']['high_24h']['usd'];
                       final l24USD = coin['market_data']['low_24h']['usd'];
-                
+
                       final athBtc = coin['market_data']['ath']['btc'];
                       final atlBTC = coin['market_data']['atl']['btc'];
                       final athUSD = coin['market_data']['ath']['usd'];
                       final atlUSD = coin['market_data']['atl']['usd'];
-                
+
                       final percentageChange =
                           coin['market_data']['price_change_percentage_24h'];
-                
+
                       final circulatingSupply =
                           coin['market_data']['circulating_supply'];
                       final maxSupply = coin['market_data']['max_supply'];
                       final totalSupply = coin['market_data']['total_supply'];
-                
+
                       final creationDate = coin['genesis_date'];
-                
+
                       cryptoBirth(x) {
                         DateTime parseTime = DateTime.parse(x);
                         return DateFormat('dd MMM, yyyy').format(parseTime);
                       }
-                
-                      final priceChange = coin['market_data']['price_change_24h'];
+
+                      final priceChange =
+                          coin['market_data']['price_change_24h'];
                       final priceChangeBtc = coin['market_data']
                           ['price_change_24h_in_currency']['btc'];
                       final priceChangeBtcPercent = coin['market_data']
                           ['price_change_percentage_24h_in_currency']['btc'];
                       final upTrend = percentageChange > 0;
-                
+
                       String coinDescription = coin['description']['en'];
                       return Expanded(
                         child: SingleChildScrollView(
@@ -321,7 +332,8 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                         width: rankWidth(marketRank),
                                         decoration: BoxDecoration(
                                           color: AppColors.shadowColor,
-                                          borderRadius: BorderRadius.circular(5.sp),
+                                          borderRadius:
+                                              BorderRadius.circular(5.sp),
                                         ),
                                         child: Center(
                                             child: Text(
@@ -360,7 +372,8 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                               spacing: 5.sp,
                                               children: [
                                                 Icon(LucideIcons.arrowDownUp,
-                                                    color: AppColors.inactiveIcon,
+                                                    color:
+                                                        AppColors.inactiveIcon,
                                                     size: 18.sp),
                                                 Text(
                                                   swapCurrency
@@ -368,8 +381,8 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                                       : '${btcPrice.toString()} ₿',
                                                   style: TextStyle(
                                                       fontSize: 13.sp,
-                                                      color:
-                                                          AppColors.inactiveIcon),
+                                                      color: AppColors
+                                                          .inactiveIcon),
                                                 ),
                                               ],
                                             )
@@ -411,7 +424,8 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                               Icon(
                                                 marketIcon(
                                                     percentageChange, upTrend),
-                                                color: AppColors.backgroundColor,
+                                                color:
+                                                    AppColors.backgroundColor,
                                                 size: 18.sp,
                                               ),
                                               Text(
@@ -424,10 +438,11 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                                         : percentagePriceformat(
                                                             priceChange)),
                                                 style: TextStyle(
-                                                    color:
-                                                        AppColors.backgroundColor,
+                                                    color: AppColors
+                                                        .backgroundColor,
                                                     fontSize: 13.sp,
-                                                    fontWeight: FontWeight.bold),
+                                                    fontWeight:
+                                                        FontWeight.bold),
                                               ),
                                             ],
                                           ),
@@ -437,20 +452,88 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                   )
                                 ]),
                                 Container(
-                                  height: 220.sp,
+                                  height: 270.sp,
                                   decoration: BoxDecoration(
                                       color: AppColors.shadowColor,
-                                      borderRadius: BorderRadius.circular(10.r)),
-                                  child: Center(child: Text('chart here')),
+                                      borderRadius:
+                                          BorderRadius.circular(10.r)),
+                                  child: Center(
+                                      child: FutureBuilder(
+                                    future: _coinsChart,
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return CircularProgressIndicator(
+                                          color: AppColors.appColor,
+                                        );
+                                      } else if (snapshot.hasError) {
+                                        return Text('Error: ${snapshot.error}');
+                                      } else if (snapshot.hasData) {
+                                        return SfCartesianChart(
+                                          trackballBehavior: TrackballBehavior(
+                                            enable: true,
+                                            activationMode:
+                                                ActivationMode.singleTap,
+                                            tooltipSettings: InteractiveTooltip(
+                                              enable: true,
+                                              color: AppColors.backgroundColor,
+                                              textStyle: TextStyle(
+                                                color: AppColors.iconColor,
+                                              ),
+                                            ),
+                                          ),
+                                          zoomPanBehavior: ZoomPanBehavior(
+                                            enablePanning: true,
+                                            enablePinching: true,
+                                          ),
+                                          tooltipBehavior: _tooltipBehavior,
+                                          primaryYAxis: NumericAxis(
+                                            numberFormat:
+                                                NumberFormat.simpleCurrency(
+                                                    decimalDigits: 0),
+                                          ),
+                                          series: [
+                                            CandleSeries(
+                                              enableSolidCandles: true,
+                                              enableTooltip: true,
+                                              dataSource: snapshot.data,
+                                              bullColor: AppColors.chartUpTrend,
+                                              bearColor:
+                                                  AppColors.chartDownTrend,
+                                              xValueMapper:
+                                                  (dynamic sales, _) =>
+                                                      sales[0],
+                                              lowValueMapper:
+                                                  (dynamic sales, _) =>
+                                                      sales[1],
+                                              highValueMapper:
+                                                  (dynamic sales, _) =>
+                                                      sales[2],
+                                              openValueMapper:
+                                                  (dynamic sales, _) =>
+                                                      sales[3],
+                                              closeValueMapper:
+                                                  (dynamic sales, _) =>
+                                                      sales[4],
+                                              animationDuration: 100,
+                                            )
+                                          ],
+                                        );
+                                      } else {
+                                        return Text('No data available');
+                                      }
+                                    },
+                                  )),
                                 ),
                                 Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 10),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10),
                                   child: Container(
                                     height: 45.sp,
                                     decoration: BoxDecoration(
                                         // color: AppColors.shadowColor,
-                                        borderRadius: BorderRadius.circular(8.r)),
+                                        borderRadius:
+                                            BorderRadius.circular(8.r)),
                                     child: Row(
                                       children: [
                                         ConstrainedBox(
@@ -458,7 +541,8 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                             maxWidth: 105.sp,
                                           ),
                                           child: ShadSelect<dynamic>(
-                                              initialValue: LucideIcons.chartSpline,
+                                              initialValue:
+                                                  LucideIcons.chartSpline,
                                               options: [
                                                 ShadOption(
                                                     value: LucideIcons
@@ -472,13 +556,14 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                                       ],
                                                     )),
                                                 ShadOption(
-                                                    value: LucideIcons.chartSpline,
+                                                    value:
+                                                        LucideIcons.chartSpline,
                                                     child: Row(
                                                       spacing: 3.sp,
                                                       children: [
                                                         Text('Price'),
-                                                        Icon(
-                                                            LucideIcons.chartSpline)
+                                                        Icon(LucideIcons
+                                                            .chartSpline)
                                                       ],
                                                     )),
                                                 ShadOption(
@@ -486,7 +571,8 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                                     child: Text('Market Cap'))
                                               ],
                                               selectedOptionBuilder:
-                                                  (context, value) => Icon(value)),
+                                                  (context, value) =>
+                                                      Icon(value)),
                                         ),
                                         SizedBox(
                                           width: 235.sp,
@@ -506,7 +592,8 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                   height: 60.sp,
                                   decoration: BoxDecoration(
                                       color: AppColors.shadowColor,
-                                      borderRadius: BorderRadius.circular(8.sp)),
+                                      borderRadius:
+                                          BorderRadius.circular(8.sp)),
                                   child: Center(
                                     child: ListView.builder(
                                       padding: EdgeInsets.symmetric(
@@ -515,31 +602,32 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                       scrollDirection: Axis.horizontal,
                                       itemCount: marketPercentage.length,
                                       itemBuilder: (context, index) {
-                                        String frame =
-                                            marketPercentage.keys.elementAt(index);
-                                        String framePercentage = marketPercentage
-                                            .values
+                                        String frame = marketPercentage.keys
                                             .elementAt(index);
+                                        String framePercentage =
+                                            marketPercentage.values
+                                                .elementAt(index);
                                         final marketChangePercentage =
-                                            coin['market_data'][framePercentage];
+                                            coin['market_data']
+                                                [framePercentage];
                                         final bool marketBullish =
                                             marketChangePercentage == null
                                                 ? marketChangePercentage == 0
                                                 : marketChangePercentage ==
                                                     marketChangePercentage;
-                
+
                                         String frameBTCPercentage =
                                             marketBtcPercentage.values
                                                 .elementAt(index);
                                         final marketBTCChangePercentage =
-                                            coin['market_data'][frameBTCPercentage]
-                                                ['btc'];
+                                            coin['market_data']
+                                                [frameBTCPercentage]['btc'];
                                         final bool marketBTCBullish =
                                             marketBTCChangePercentage == null
                                                 ? marketBTCChangePercentage == 0
                                                 : marketBTCChangePercentage ==
                                                     marketBTCChangePercentage;
-                
+
                                         return Padding(
                                           padding: EdgeInsets.symmetric(
                                               horizontal: 4.sp),
@@ -592,7 +680,8 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                                             : marketColor(
                                                                 marketChangePercentage,
                                                                 marketBullish),
-                                                        fontWeight: FontWeight.w600,
+                                                        fontWeight:
+                                                            FontWeight.w600,
                                                         fontSize: 12.sp),
                                                   ),
                                                 ],
@@ -624,7 +713,8 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                                 'Market Cap Rank',
                                                 style: TextStyle(
                                                     fontSize: 12.sp,
-                                                    color: AppColors.inactiveIcon),
+                                                    color:
+                                                        AppColors.inactiveIcon),
                                               ),
                                               Text(
                                                 '#${marketRank.toString()}',
@@ -645,12 +735,14 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                                 'Market Cap',
                                                 style: TextStyle(
                                                     fontSize: 12.sp,
-                                                    color: AppColors.inactiveIcon),
+                                                    color:
+                                                        AppColors.inactiveIcon),
                                               ),
                                               Text(
                                                 swapCurrency
                                                     ? '${formatBtcNumberNew(marketCapBTC)} ₿'
-                                                    : formatCapPrice(marketCapUSD),
+                                                    : formatCapPrice(
+                                                        marketCapUSD),
                                                 style: TextStyle(
                                                     color: AppColors.iconColor),
                                               )
@@ -668,12 +760,14 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                                 'Fully Diluted Valuation',
                                                 style: TextStyle(
                                                     fontSize: 12.sp,
-                                                    color: AppColors.inactiveIcon),
+                                                    color:
+                                                        AppColors.inactiveIcon),
                                               ),
                                               Text(
                                                 swapCurrency
                                                     ? '${formatBtcNumberNew(fDilutedBTC)} ₿'
-                                                    : formatCapPrice(fDilutedUSD),
+                                                    : formatCapPrice(
+                                                        fDilutedUSD),
                                                 style: TextStyle(
                                                     color: AppColors.iconColor),
                                               )
@@ -691,7 +785,8 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                                 'Market Cap/ FDV Ratio',
                                                 style: TextStyle(
                                                     fontSize: 12.sp,
-                                                    color: AppColors.inactiveIcon),
+                                                    color:
+                                                        AppColors.inactiveIcon),
                                               ),
                                               Text(
                                                 marketCapFdvRatio
@@ -713,7 +808,8 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                                 'Trading Volume',
                                                 style: TextStyle(
                                                     fontSize: 12.sp,
-                                                    color: AppColors.inactiveIcon),
+                                                    color:
+                                                        AppColors.inactiveIcon),
                                               ),
                                               Text(
                                                 swapCurrency
@@ -737,7 +833,8 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                                 '24 High',
                                                 style: TextStyle(
                                                     fontSize: 12.sp,
-                                                    color: AppColors.inactiveIcon),
+                                                    color:
+                                                        AppColors.inactiveIcon),
                                               ),
                                               Text(
                                                 swapCurrency
@@ -760,7 +857,8 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                                 '24H Low',
                                                 style: TextStyle(
                                                     fontSize: 12.sp,
-                                                    color: AppColors.inactiveIcon),
+                                                    color:
+                                                        AppColors.inactiveIcon),
                                               ),
                                               Text(
                                                 swapCurrency
@@ -783,7 +881,8 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                                 'Circulating Supply',
                                                 style: TextStyle(
                                                     fontSize: 12.sp,
-                                                    color: AppColors.inactiveIcon),
+                                                    color:
+                                                        AppColors.inactiveIcon),
                                               ),
                                               Text(
                                                 formatSuppy(circulatingSupply),
@@ -804,7 +903,8 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                                 'Total Supply',
                                                 style: TextStyle(
                                                     fontSize: 12.sp,
-                                                    color: AppColors.inactiveIcon),
+                                                    color:
+                                                        AppColors.inactiveIcon),
                                               ),
                                               Text(
                                                 formatSuppy(totalSupply),
@@ -825,7 +925,8 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                                 'Max Supply',
                                                 style: TextStyle(
                                                     fontSize: 12.sp,
-                                                    color: AppColors.inactiveIcon),
+                                                    color:
+                                                        AppColors.inactiveIcon),
                                               ),
                                               Text(
                                                 maxSupply == null
@@ -848,7 +949,8 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                                 'All-Time High',
                                                 style: TextStyle(
                                                     fontSize: 12.sp,
-                                                    color: AppColors.inactiveIcon),
+                                                    color:
+                                                        AppColors.inactiveIcon),
                                               ),
                                               Text(
                                                 swapCurrency
@@ -871,7 +973,8 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                                 'All-Time Low',
                                                 style: TextStyle(
                                                     fontSize: 12.sp,
-                                                    color: AppColors.inactiveIcon),
+                                                    color:
+                                                        AppColors.inactiveIcon),
                                               ),
                                               Text(
                                                 swapCurrency
@@ -894,7 +997,8 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                                 'Genesis Date',
                                                 style: TextStyle(
                                                     fontSize: 12.sp,
-                                                    color: AppColors.inactiveIcon),
+                                                    color:
+                                                        AppColors.inactiveIcon),
                                               ),
                                               Text(
                                                 creationDate == null
@@ -926,48 +1030,85 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                               color: AppColors.iconColor),
                                         ),
                                         GestureDetector(
-                                          onTap: () {
-                                           showShadSheet(context: context, builder: (context) {
-                                             return Padding(
-                                               padding: EdgeInsets.only(top: 55.sp),
-                                               child: ShadSheet(
-                                                 backgroundColor: AppColors.backgroundColor,
-                                               scrollable: false,
-                                                title: Text('About $coinName'),
-                                                description: Padding(
-                                                  padding: EdgeInsets.symmetric(vertical: 8.sp),
-                                                  child: Text('What is $coinName ($coinSymbol)?', textAlign: TextAlign.start,),
-                                                ),
-                                                descriptionStyle: TextStyle(
-                                                  fontSize: 16.sp,
-                                                  color: AppColors.iconColor,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                                child: SingleChildScrollView(
-                                                  scrollDirection: Axis.vertical,
-                                                  child: Text(coinDescription, style: TextStyle(color: AppColors.inactiveIcon, fontSize: 15.sp),)),
-                                                                                       ),
-                                             );
-                                           },);
-                
-                                          },
-                                          child: Text('Read More', style: TextStyle(color: AppColors.appColor,)))
+                                            onTap: () {
+                                              showShadSheet(
+                                                context: context,
+                                                builder: (context) {
+                                                  return Padding(
+                                                    padding: EdgeInsets.only(
+                                                        top: 55.sp),
+                                                    child: ShadSheet(
+                                                      backgroundColor: AppColors
+                                                          .backgroundColor,
+                                                      scrollable: false,
+                                                      title: Text(
+                                                          'About $coinName'),
+                                                      description: Padding(
+                                                        padding: EdgeInsets
+                                                            .symmetric(
+                                                                vertical: 8.sp),
+                                                        child: Text(
+                                                          'What is $coinName ($coinSymbol)?',
+                                                          textAlign:
+                                                              TextAlign.start,
+                                                        ),
+                                                      ),
+                                                      descriptionStyle:
+                                                          TextStyle(
+                                                        fontSize: 16.sp,
+                                                        color:
+                                                            AppColors.iconColor,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                      child:
+                                                          SingleChildScrollView(
+                                                              scrollDirection:
+                                                                  Axis.vertical,
+                                                              child: Text(
+                                                                coinDescription,
+                                                                style: TextStyle(
+                                                                    color: AppColors
+                                                                        .inactiveIcon,
+                                                                    fontSize:
+                                                                        15.sp),
+                                                              )),
+                                                    ),
+                                                  );
+                                                },
+                                              );
+                                            },
+                                            child: Text('Read More',
+                                                style: TextStyle(
+                                                  color: AppColors.appColor,
+                                                )))
                                       ],
                                     ),
                                     Divider(),
                                     Padding(
-                                      padding: EdgeInsets.symmetric(vertical: 8.sp),
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 8.sp),
                                       child: Row(
                                         children: [
-                                          Text('What is $coinName ($coinSymbol)?', textAlign: TextAlign.left, style: TextStyle(color: AppColors.inactiveIcon, fontWeight: FontWeight.w600, fontSize: 14.sp),),
+                                          Text(
+                                            'What is $coinName ($coinSymbol)?',
+                                            textAlign: TextAlign.left,
+                                            style: TextStyle(
+                                                color: AppColors.inactiveIcon,
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 14.sp),
+                                          ),
                                         ],
                                       ),
                                     ),
-                                  
-                                    Text(coinDescription,
-                                     maxLines: 5,
-                                     overflow: TextOverflow.ellipsis,
-                                     style: TextStyle(color: AppColors.iconColor,),)
+                                    Text(
+                                      coinDescription,
+                                      maxLines: 5,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: AppColors.iconColor,
+                                      ),
+                                    )
                                   ],
                                 )
                               ],

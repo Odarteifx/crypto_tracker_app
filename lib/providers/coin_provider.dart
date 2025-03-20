@@ -60,6 +60,28 @@ Future<Map<String, dynamic>?> getCoinDetails(widget) async {
     }
   }
 
+  Future getCoinChart(widget, day, currency) async{
+    final apiKey = '${dotenv.env['COINGECKO_API_KEY']}';
+    String url = 'https://api.coingecko.com/api/v3/coins/${widget.coin.id}/ohlc?vs_currency=$currency&days=$day';
+    final uri = Uri.parse(url);
+
+    try {
+      final response = await http.get(uri,
+          headers: {'x-cg-demo-api-key': apiKey, 'accept': 'application/json'});
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = jsonDecode(response.body);
+        final coinChart = jsonData;
+        debugPrint(coinChart.asMap().toString());
+        return coinChart;
+      } else {
+        throw Exception('Failed to load coins: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      throw Exception('Error fetching coins: $e');
+    }
+  }
+
 }
 
  
