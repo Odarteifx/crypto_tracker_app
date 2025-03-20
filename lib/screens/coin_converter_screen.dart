@@ -315,7 +315,7 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
                                       height: 26.sp,
                                     ),
                                     SizedBox(width: 8.sp),
-                                    Text(coin[index].name),
+                                    Flexible(child: Text(coin[index].name,overflow: TextOverflow.ellipsis,)),
                                   ],
                                 ),
                               ),
