@@ -40,6 +40,21 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
     super.initState();
   }
 
+  void _swapCoins() {
+    setState(() {
+      final tempCoin = selectedCoin;
+      final tempCoinName = selectedCoinName;
+
+      selectedCoin = outputCoin;
+      selectedCoinName = outputCoinName;
+
+      outputCoin = tempCoin;
+      outputCoinName = tempCoinName;
+
+      _calculateOutput(inputAmount);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,101 +93,120 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
                 ],
               ),
             ),
-            Column(
-              spacing: 10.sp,
+            Stack(
               children: [
-                SizedBox(
-                  height: 100.sp,
-                  child: Padding(
-                    padding: EdgeInsets.all(20.sp),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            showShadSheet(
-                              context: context,
-                              builder: (context) {
-                                return coinOption(
-                                    selectedCoin, selectedCoinName, true);
+                Column(
+                  spacing: 10.sp,
+                  children: [
+                    SizedBox(
+                      height: 100.sp,
+                      child: Padding(
+                        padding: EdgeInsets.all(20.sp),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                showShadSheet(
+                                  context: context,
+                                  builder: (context) {
+                                    return coinOption(
+                                        selectedCoin, selectedCoinName, true);
+                                  },
+                                );
                               },
-                            );
-                          },
-                          child: Row(
-                            spacing: 10.sp,
-                            children: [
-                              selectedCoin == null
-                                  ? ShadAvatar('src')
-                                  : Image.network(
-                                      selectedCoin!.image,
-                                      height: 30.sp,
-                                    ),
-                              Text(
-                                selectedCoin == null
-                                    ? selectedCoinName
-                                    : selectedCoin!.symbol.toUpperCase(),
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16.sp),
+                              child: Row(
+                                spacing: 10.sp,
+                                children: [
+                                  selectedCoin == null
+                                      ? ShadAvatar('src')
+                                      : Image.network(
+                                          selectedCoin!.image,
+                                          height: 30.sp,
+                                        ),
+                                  Text(
+                                    selectedCoin == null
+                                        ? selectedCoinName
+                                        : selectedCoin!.symbol.toUpperCase(),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16.sp),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            ),
+                            Text(
+                                inputAmountString.isEmpty
+                                    ? '0.00'
+                                    : inputAmountString,
+                                style: TextStyle(fontSize: 25.sp))
+                          ],
                         ),
-                        Text(
-                            inputAmountString.isEmpty
-                                ? '0.00'
-                                : inputAmountString,
-                            style: TextStyle(fontSize: 25.sp))
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-                Container(
-                  height: 100.sp,
-                  color: AppColors.shadowColor,
-                  child: Padding(
-                    padding: EdgeInsets.all(20.sp),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            showShadSheet(
-                              context: context,
-                              builder: (context) {
-                                return coinOption(
-                                    outputCoin, outputCoinName, false);
+                    
+                    Container(
+                      height: 100.sp,
+                      color: AppColors.shadowColor,
+                      child: Padding(
+                        padding: EdgeInsets.all(20.sp),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                showShadSheet(
+                                  context: context,
+                                  builder: (context) {
+                                    return coinOption(
+                                        outputCoin, outputCoinName, false);
+                                  },
+                                );
                               },
-                            );
-                          },
-                          child: Row(
-                            spacing: 10.sp,
-                            children: [
-                              outputCoin == null
-                                  ? ShadAvatar('src',
-                                      backgroundColor:
-                                          AppColors.backgroundColor)
-                                  : Image.network(
-                                      outputCoin!.image,
-                                      height: 30.sp,
-                                    ),
-                              Text(
-                                outputCoin == null
-                                    ? outputCoinName
-                                    : outputCoin!.symbol.toUpperCase(),
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16.sp),
+                              child: Row(
+                                spacing: 10.sp,
+                                children: [
+                                  outputCoin == null
+                                      ? ShadAvatar('src',
+                                          backgroundColor:
+                                              AppColors.backgroundColor)
+                                      : Image.network(
+                                          outputCoin!.image,
+                                          height: 30.sp,
+                                        ),
+                                  Text(
+                                    outputCoin == null
+                                        ? outputCoinName
+                                        : outputCoin!.symbol.toUpperCase(),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16.sp),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            ),
+                            Text(
+                                outputAmount == 0
+                                    ? '0.00'
+                                    : formatPrice(outputAmount),
+                                style: TextStyle(fontSize: 25.sp))
+                          ],
                         ),
-                        Text(
-                            outputAmount == 0
-                                ? '0.00'
-                                : formatPrice(outputAmount),
-                            style: TextStyle(fontSize: 25.sp))
-                      ],
+                      ),
+                    ),
+                  ],
+                ),
+                Positioned(
+                  top: 86.sp,
+                  left: 38.sp,
+                  child: ShadIconButton.ghost(
+                    width: 30.sp,
+                    height: 40.sp,
+                    onPressed: _swapCoins,
+                    icon: Icon(
+                      LucideIcons.arrowDownUp,
+                      size: 30.sp,
+                      color: AppColors.appColor,
                     ),
                   ),
                 ),
@@ -308,15 +342,17 @@ class _CoinConverterScreenState extends ConsumerState<CoinConverterScreen> {
                               },
                               child: Padding(
                                 padding: EdgeInsets.all(8.0),
-                                child: Row(
-                                  children: [
-                                    Image.network(
-                                      coin[index].image,
-                                      height: 26.sp,
-                                    ),
-                                    SizedBox(width: 8.sp),
-                                    Flexible(child: Text(coin[index].name,overflow: TextOverflow.ellipsis,)),
-                                  ],
+                                child: Expanded(
+                                  child: Row(
+                                    children: [
+                                      Image.network(
+                                        coin[index].image,
+                                        height: 26.sp,
+                                      ),
+                                      SizedBox(width: 8.sp),
+                                      Flexible(child: Text(coin[index].name,overflow: TextOverflow.ellipsis,)),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
