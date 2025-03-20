@@ -71,7 +71,6 @@ Future<Map<String, dynamic>?> getCoinDetails(widget) async {
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = jsonDecode(response.body);
         final coinChart = jsonData;
-        debugPrint(coinChart.asMap().toString());
         return coinChart;
       } else {
         throw Exception('Failed to load coins: ${response.statusCode}');

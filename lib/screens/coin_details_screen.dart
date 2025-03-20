@@ -25,7 +25,15 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
   late TooltipBehavior _tooltipBehavior;
 
   int _selectedTabIndex = 0;
-  final List<String> _tabs = ['24H', '7D', '1M', '1Y', 'Max'];
+  final Map<String, String> _tabs = {
+    '24H': '1',
+   '7D': '7',
+   '1M': '30', 
+   '3M': '90',
+   '1Y': '365'
+   };
+  String? day;
+  String currency = 'usd';
   final Map<IconData, String> chartType = {
     LucideIcons.chartSpline: 'Price',
     LucideIcons.chartCandlestick: 'Price',
@@ -133,19 +141,22 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
     }
   }
 
+  updateChart(){
+    _coinsChart = ref.read(coinProvider.notifier).getCoinChart(widget, day, currency);
+  }
+
   @override
   void initState() {
     super.initState();
     _coinsFuture = ref.read(coinProvider.notifier).getCoinDetails(widget);
-    _coinsChart =
-        ref.read(coinProvider.notifier).getCoinChart(widget, '365', 'usd');
+   updateChart();
     _tooltipBehavior = TooltipBehavior(enable: true);
   }
 
   Future<void> _refreshCoin() async {
+    updateChart();
     _coinsFuture = ref.read(coinProvider.notifier).getCoinDetails(widget);
-     _coinsChart =
-        ref.read(coinProvider.notifier).getCoinChart(widget, '365', 'usd');
+    
   }
 
   @override
@@ -452,9 +463,9 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                   )
                                 ]),
                                 Container(
-                                  height: 270.sp,
+                                  height: 300.sp,
                                   decoration: BoxDecoration(
-                                      color: AppColors.shadowColor,
+                                      // color: AppColors.shadowColor,
                                       borderRadius:
                                           BorderRadius.circular(10.r)),
                                   child: Center(
@@ -492,6 +503,14 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                                 NumberFormat.simpleCurrency(
                                                     decimalDigits: 0),
                                           ),
+                                          primaryXAxis: DateTimeAxis(
+                                            dateFormat: day == '1'? DateFormat.Hm() : day == '7' ? DateFormat.Md() : day == '30' ? DateFormat.Md() : day == '90' ? DateFormat.Md() : day == '365' ? DateFormat.Md() : DateFormat.Md(),
+                                            intervalType: DateTimeIntervalType.auto,
+                                            interval: 1,
+                                            majorGridLines: MajorGridLines(
+                                              width: 0,
+                                            ),
+                                          ),
                                           series: [
                                             CandleSeries(
                                               enableSolidCandles: true,
@@ -502,7 +521,7 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                                   AppColors.chartDownTrend,
                                               xValueMapper:
                                                   (dynamic sales, _) =>
-                                                      sales[0],
+                                                      DateTime.fromMillisecondsSinceEpoch(sales[0]),
                                               lowValueMapper:
                                                   (dynamic sales, _) =>
                                                       sales[1],
@@ -1147,10 +1166,13 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
 
   Widget _buildTab(int index) {
     final isSelected = _selectedTabIndex == index;
+    final chartday = _tabs.entries.elementAt(index).value;
     return GestureDetector(
       onTap: () {
         setState(() {
           _selectedTabIndex = index;
+          day = chartday;
+          updateChart();
         });
       },
       child: Padding(
@@ -1165,7 +1187,7 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                _tabs[index],
+                _tabs.entries.elementAt(index).key,
                 style: TextStyle(
                   color: isSelected
                       ? AppColors.backgroundColor
