@@ -465,7 +465,7 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                 Container(
                                   height: 300.sp,
                                   decoration: BoxDecoration(
-                                      color: AppColors.shadowColor,
+                                      // color: AppColors.shadowColor,
                                       borderRadius:
                                           BorderRadius.circular(10.r)),
                                   child: Center(
@@ -507,8 +507,7 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                           primaryXAxis: DateTimeAxis(
                                             dateFormat: day == '1'? DateFormat.Hm() : day == '7' ? DateFormat.Md() : day == '30' ? DateFormat.Md() : day == '90' ? DateFormat.Md() : day == '365' ? DateFormat.Md() : DateFormat.Md(),
                                             intervalType: DateTimeIntervalType.auto,
-                                           
-                                            interval: 1,
+                                            interval: 2,
                                             majorGridLines: MajorGridLines(
                                               width: 0,
                                             ),
