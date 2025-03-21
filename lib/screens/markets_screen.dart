@@ -10,6 +10,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
+import '../models/nfts.dart';
+
 class MarketsScreen extends ConsumerStatefulWidget {
   const MarketsScreen({super.key});
 
@@ -20,10 +22,11 @@ class MarketsScreen extends ConsumerStatefulWidget {
 class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   int _selectedTabIndex = 0;
   Future<List<CoinModel>>? _coinsFuture;
+  Future<List<NFTModel>>? _nftFuture;
   final List<String> _tabs = [
     'Coins',
     'Watchlists',
-    'Overview',
+    'NFT',
     'Exchanges',
     'Categories'
   ];
@@ -54,15 +57,22 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
     }
     return symbol;
   }
+
+  updateNFT(){
+    _nftFuture = ref.read(coinProvider.notifier).fetchNFTs();
+  }
   Future<void> _refreshCoins() async {
-      _coinsFuture = ref.read(coinProvider.notifier).fetchCoins();
-      debugPrint('Refreshed Successful');
+      setState(() {
+         _coinsFuture = ref.read(coinProvider.notifier).fetchCoins();
+      updateNFT();
+      });
   }
 
   @override
   void initState() {
     super.initState();
     _coinsFuture = ref.read(coinProvider.notifier).fetchCoins();
+    updateNFT();
   }
 
   @override
@@ -172,232 +182,37 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   Widget _buildTabContent() {
     switch (_selectedTabIndex) {
       case 0:
-        return RefreshIndicator(
-          onRefresh: _refreshCoins,
-          color: AppColors.appColor,
-          child: FutureBuilder<List<CoinModel>>(
-            future: _coinsFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(
-                    child: CircularProgressIndicator(
-                  color: AppColors.appColor,
-                ));
-              } else if (snapshot.hasError) {
-                return Center(
-                  child: Text(
-                    'Error: ${snapshot.error}',
-                  ),
-                );
-              } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                final coins = snapshot.data!;
-
-                return Column(
-                  children: [
-                    // Header Row
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 20.sp,
-                      ),
-                      child: SizedBox(
-                        height: 30.sp,
-                        child: Row(
-                          spacing: 7.sp,
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              '#',
-                              style: TextStyle(
-                                color: AppColors.inactiveIcon,
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            SizedBox(
-                              width: 6.sp,
-                            ),
-                            Text(
-                              'Market Cap',
-                              style: TextStyle(
-                                color: AppColors.inactiveIcon,
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            Expanded(
-                              child: Text(
-                                textAlign: TextAlign.center,
-                                'Price',
-                                style: TextStyle(
-                                  color: AppColors.inactiveIcon,
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              '24h %',
-                              style: TextStyle(
-                                color: AppColors.inactiveIcon,
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            SizedBox(
-                              width: 60.sp,
-                              child: Text(
-                                textAlign: TextAlign.center,
-                                '7d',
-                                style: TextStyle(
-                                  color: AppColors.inactiveIcon,
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    // List Items
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: coins.length,
-                        padding: EdgeInsets.zero,
-                        itemBuilder: (context, index) {
-                          final upTrend =
-                              coins[index].priceChangePercentage24h > 0;
-                          final chartColor = upTrend
-                              ? AppColors.chartUpTrend
-                              : AppColors.chartDownTrend;
-                          return GestureDetector(
-                            onTap: () {
-                              context.push('/coinDetails', extra: coins[index]);
-                            },
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 15.sp, vertical: 8.sp),
-                              child: SizedBox(
-                                height: 50.sp,
-                                child: Row(
-                                  spacing: 7.sp,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Text(coins[index].marketCapRank.toString()),
-                                    SizedBox(),
-                                    Image.network(
-                                      coins[index].image,
-                                      height: 26.sp,
-                                    ),
-                                    Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          formatSymbol(coins[index]
-                                              .symbol
-                                              .toUpperCase()),
-                                          style: TextStyle(
-                                            fontSize: 12.sp,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        Text(
-                                          formatMarketCap(coins[index]
-                                              .marketCap
-                                              .toDouble()),
-                                          style: TextStyle(
-                                            color: AppColors.inactiveIcon,
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 13.sp,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        textAlign: TextAlign.end,
-                                        formatPrice(coins[index]
-                                            .currentPrice
-                                            .toDouble()),
-                                        style: TextStyle(
-                                          fontSize: 14.sp,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          '${coins[index].priceChangePercentage24h.toStringAsFixed(2)}%',
-                                          style: TextStyle(
-                                            fontSize: 12.sp,
-                                            fontWeight: FontWeight.w600,
-                                            color: upTrend
-                                                ? AppColors.chartUpTrend
-                                                : AppColors.chartDownTrend,
-                                          ),
-                                        ),
-                                        Icon(
-                                          upTrend
-                                              ? LucideIcons.arrowUp
-                                              : LucideIcons.arrowDown,
-                                          size: 12.sp,
-                                          color: upTrend
-                                              ? AppColors.chartUpTrend
-                                              : AppColors.chartDownTrend,
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(
-                                      height: 25.sp,
-                                      width: 60.sp,
-                                      child: Sparkline(
-                                        lineColor: chartColor,
-                                        lineGradient: LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [
-                                            chartColor,
-                                            chartColor.withValues(alpha: 0.2),
-                                          ],
-                                        ),
-                                        fillColor:
-                                            chartColor.withValues(alpha: 0.1),
-                                        fillMode: FillMode.below,
-                                        data: List<double>.from(
-                                          coins[index]
-                                              .sparklineIn7d
-                                              .price
-                                              .map((e) => e.toDouble()),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                );
-              } else {
-                return const Center(child: Text('No data available'));
-              }
-            },
-          ),
-        );
+        return coinsList();
       case 1:
-        return Center(child: Text('Watchlist Coming Soon'));
+        return Center(child: Text('Watchlists Coming Soon'));
       case 2:
-        return Center(child: Text('Overview Coming Soon'));
+        return FutureBuilder(future: _nftFuture, builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+                child: CircularProgressIndicator(
+              color: AppColors.appColor,
+            ));
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Error: ${snapshot.error}',
+              ),
+            );
+          } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+            final nfts = snapshot.data!;
+            return ListView.builder(
+              itemCount: nfts.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(nfts[index].name),
+                  subtitle: Text(nfts[index].symbol),
+                );
+              },
+            );
+          } else {
+            return const Center(child: Text('No data available'));
+          }
+        },);
       case 3:
         return Center(child: Text('Exchanges Coming Soon'));
       case 4:
@@ -405,5 +220,230 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
       default:
         return SizedBox();
     }
+  }
+
+  RefreshIndicator coinsList() {
+    return RefreshIndicator(
+        onRefresh: _refreshCoins,
+        color: AppColors.appColor,
+        child: FutureBuilder<List<CoinModel>>(
+          future: _coinsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                  child: CircularProgressIndicator(
+                color: AppColors.appColor,
+              ));
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  'Error: ${snapshot.error}',
+                ),
+              );
+            } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+              final coins = snapshot.data!;
+
+              return Column(
+                children: [
+                  // Header Row
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 20.sp,
+                    ),
+                    child: SizedBox(
+                      height: 30.sp,
+                      child: Row(
+                        spacing: 7.sp,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            '#',
+                            style: TextStyle(
+                              color: AppColors.inactiveIcon,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(
+                            width: 6.sp,
+                          ),
+                          Text(
+                            'Market Cap',
+                            style: TextStyle(
+                              color: AppColors.inactiveIcon,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              textAlign: TextAlign.center,
+                              'Price',
+                              style: TextStyle(
+                                color: AppColors.inactiveIcon,
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            '24h %',
+                            style: TextStyle(
+                              color: AppColors.inactiveIcon,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(
+                            width: 60.sp,
+                            child: Text(
+                              textAlign: TextAlign.center,
+                              '7d',
+                              style: TextStyle(
+                                color: AppColors.inactiveIcon,
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // List Items
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: coins.length,
+                      padding: EdgeInsets.zero,
+                      itemBuilder: (context, index) {
+                        final upTrend =
+                            coins[index].priceChangePercentage24h > 0;
+                        final chartColor = upTrend
+                            ? AppColors.chartUpTrend
+                            : AppColors.chartDownTrend;
+                        return GestureDetector(
+                          onTap: () {
+                            context.push('/coinDetails', extra: coins[index]);
+                          },
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 15.sp, vertical: 8.sp),
+                            child: SizedBox(
+                              height: 50.sp,
+                              child: Row(
+                                spacing: 7.sp,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(coins[index].marketCapRank.toString()),
+                                  SizedBox(),
+                                  Image.network(
+                                    coins[index].image,
+                                    height: 26.sp,
+                                  ),
+                                  Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        formatSymbol(coins[index]
+                                            .symbol
+                                            .toUpperCase()),
+                                        style: TextStyle(
+                                          fontSize: 12.sp,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      Text(
+                                        formatMarketCap(coins[index]
+                                            .marketCap
+                                            .toDouble()),
+                                        style: TextStyle(
+                                          color: AppColors.inactiveIcon,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 13.sp,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      textAlign: TextAlign.end,
+                                      formatPrice(coins[index]
+                                          .currentPrice
+                                          .toDouble()),
+                                      style: TextStyle(
+                                        fontSize: 14.sp,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        '${coins[index].priceChangePercentage24h.toStringAsFixed(2)}%',
+                                        style: TextStyle(
+                                          fontSize: 12.sp,
+                                          fontWeight: FontWeight.w600,
+                                          color: upTrend
+                                              ? AppColors.chartUpTrend
+                                              : AppColors.chartDownTrend,
+                                        ),
+                                      ),
+                                      Icon(
+                                        upTrend
+                                            ? LucideIcons.arrowUp
+                                            : LucideIcons.arrowDown,
+                                        size: 12.sp,
+                                        color: upTrend
+                                            ? AppColors.chartUpTrend
+                                            : AppColors.chartDownTrend,
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: 25.sp,
+                                    width: 60.sp,
+                                    child: Sparkline(
+                                      lineColor: chartColor,
+                                      lineGradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          chartColor,
+                                          chartColor.withValues(alpha: 0.2),
+                                        ],
+                                      ),
+                                      fillColor:
+                                          chartColor.withValues(alpha: 0.1),
+                                      fillMode: FillMode.below,
+                                      data: List<double>.from(
+                                        coins[index]
+                                            .sparklineIn7d
+                                            .price
+                                            .map((e) => e.toDouble()),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            } else {
+              return const Center(child: Text('No data available'));
+            }
+          },
+        ),
+      );
   }
 }

@@ -1,15 +1,19 @@
 import 'dart:convert';
 
 import 'package:crypto_tracker_app/models/coins.dart';
+import 'package:crypto_tracker_app/models/nfts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final coinProvider = ChangeNotifierProvider<CoinProvider>((ref) => CoinProvider());
+final coinProvider =
+    ChangeNotifierProvider<CoinProvider>((ref) => CoinProvider());
 
 class CoinProvider extends ChangeNotifier {
   List<CoinModel> coinMarkets = [];
+   List<NFTModel> nfts = [];
+   List coinChart = [];
 
   Future<List<CoinModel>> fetchCoins() async {
     final apiKey = '${dotenv.env['COINGECKO_API_KEY']}';
@@ -34,7 +38,7 @@ class CoinProvider extends ChangeNotifier {
     }
   }
 
-Future<Map<String, dynamic>?> getCoinDetails(widget) async {
+  Future<Map<String, dynamic>?> getCoinDetails(widget) async {
     final apiKey = '${dotenv.env['COINGECKO_API_KEY']}';
     String url = 'https://api.coingecko.com/api/v3/coins/${widget.coin.id}';
     final uri = Uri.parse(url);
@@ -44,12 +48,9 @@ Future<Map<String, dynamic>?> getCoinDetails(widget) async {
           headers: {'x-cg-demo-api-key': apiKey, 'accept': 'application/json'});
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = jsonDecode(response.body);
-
-       
-          final coinDetails = jsonData;
-          debugPrint('Coin details updated');
-       
-
+        final coinDetails = jsonData;
+        debugPrint('Coin details updated');
+        notifyListeners();
         return coinDetails;
       } else {
         throw Exception('Failed to load coins: ${response.statusCode}');
@@ -60,9 +61,10 @@ Future<Map<String, dynamic>?> getCoinDetails(widget) async {
     }
   }
 
-  Future getCoinChart(widget, day, currency) async{
+  Future getCoinChart(widget, day, currency) async {
     final apiKey = '${dotenv.env['COINGECKO_API_KEY']}';
-    String url = 'https://api.coingecko.com/api/v3/coins/${widget.coin.id}/ohlc?vs_currency=$currency&days=$day';
+    String url =
+        'https://api.coingecko.com/api/v3/coins/${widget.coin.id}/ohlc?vs_currency=$currency&days=$day';
     final uri = Uri.parse(url);
 
     try {
@@ -70,17 +72,40 @@ Future<Map<String, dynamic>?> getCoinDetails(widget) async {
           headers: {'x-cg-demo-api-key': apiKey, 'accept': 'application/json'});
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = jsonDecode(response.body);
-        final coinChart = jsonData;
+        coinChart = jsonData;
+        notifyListeners();
         return coinChart;
       } else {
-        throw Exception('Failed to load coins: ${response.statusCode}');
+        debugPrint('Failed to load coins: ${response.statusCode}');
+        return coinChart;
       }
     } catch (e) {
       debugPrint(e.toString());
-      throw Exception('Error fetching coins: $e');
+      return coinChart;
     }
   }
 
-}
+  Future<List<NFTModel>> fetchNFTs() async {
+    final apiKey = '${dotenv.env['COINGECKO_API_KEY']}';
+    String url =
+        'https://api.coingecko.com/api/v3/nfts/list?order=h24_volume_usd_desc&per_page=100&page=2';
+    final uri = Uri.parse(url);
 
- 
+    try {
+      final response = await http.get(uri,
+          headers: {'x-cg-demo-api-key': apiKey, 'accept': 'application/json'});
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = jsonDecode(response.body);
+        nfts = jsonData.map((json) => NFTModel.fromMap(json)).toList();
+        notifyListeners();
+        return nfts;
+      } else {
+        debugPrint('Failed to load NFTs: ${response.statusCode}');
+        return nfts;
+      }
+  } catch (e) {
+    debugPrint(e.toString());
+     return nfts;
+  }
+}
+}

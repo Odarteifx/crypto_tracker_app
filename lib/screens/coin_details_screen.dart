@@ -27,11 +27,11 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
   int _selectedTabIndex = 0;
   final Map<String, String> _tabs = {
     '24H': '1',
-   '7D': '7',
-   '1M': '30', 
-   '3M': '90',
-   '1Y': '365'
-   };
+    '7D': '7',
+    '1M': '30',
+    '3M': '90',
+    '1Y': '365'
+  };
   String? day;
   String currency = 'usd';
   final Map<IconData, String> chartType = {
@@ -141,22 +141,25 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
     }
   }
 
-  updateChart(){
-    _coinsChart = ref.read(coinProvider.notifier).getCoinChart(widget, day, currency);
+  updateChart() {
+    _coinsChart =
+        ref.read(coinProvider.notifier).getCoinChart(widget, day, currency);
   }
 
   @override
   void initState() {
     super.initState();
     _coinsFuture = ref.read(coinProvider.notifier).getCoinDetails(widget);
-   updateChart();
+    _coinsChart =
+        ref.read(coinProvider.notifier).getCoinChart(widget, day, currency);
     _tooltipBehavior = TooltipBehavior(enable: true);
   }
 
   Future<void> _refreshCoin() async {
-    updateChart();
-    _coinsFuture = ref.read(coinProvider.notifier).getCoinDetails(widget);
-    
+    setState(() {
+      _coinsFuture = ref.read(coinProvider.notifier).getCoinDetails(widget);
+      updateChart();
+    });
   }
 
   @override
@@ -234,8 +237,6 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                 ],
               ),
             ),
-
-            // Add refreshIndicator later
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () => _refreshCoin(),
@@ -501,12 +502,24 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                           primaryYAxis: NumericAxis(
                                             maximumLabels: 2,
                                             numberFormat:
-                                                NumberFormat.simpleCurrency(
-                                                    decimalDigits: 0),
+                                                NumberFormat.compactSimpleCurrency()
                                           ),
                                           primaryXAxis: DateTimeAxis(
-                                            dateFormat: day == '1'? DateFormat.Hm() : day == '7' ? DateFormat.Md() : day == '30' ? DateFormat.Md() : day == '90' ? DateFormat.Md() : day == '365' ? DateFormat.Md() : DateFormat.Md(),
-                                            intervalType: DateTimeIntervalType.auto,
+                                            dateFormat: day == '1'
+                                                ? DateFormat.Hm()
+                                                : day == '7'
+                                                    ? DateFormat.Md()
+                                                    : day == '30'
+                                                        ? DateFormat.Md()
+                                                        : day == '90'
+                                                            ? DateFormat.Md()
+                                                            : day == '365'
+                                                                ? DateFormat
+                                                                    .Md()
+                                                                : DateFormat
+                                                                    .Md(),
+                                            intervalType:
+                                                DateTimeIntervalType.auto,
                                             interval: 2,
                                             majorGridLines: MajorGridLines(
                                               width: 0,
@@ -521,8 +534,9 @@ class _CoinDetailsState extends ConsumerState<CoinDetails> {
                                               bearColor:
                                                   AppColors.chartDownTrend,
                                               xValueMapper:
-                                                  (dynamic sales, _) =>
-                                                      DateTime.fromMillisecondsSinceEpoch(sales[0]),
+                                                  (dynamic sales, _) => DateTime
+                                                      .fromMillisecondsSinceEpoch(
+                                                          sales[0]),
                                               lowValueMapper:
                                                   (dynamic sales, _) =>
                                                       sales[1],
