@@ -3,6 +3,8 @@ import 'package:crypto_tracker_app/constants/assets.dart';
 import 'package:crypto_tracker_app/constants/colors.dart';
 import 'package:crypto_tracker_app/models/coins.dart';
 import 'package:crypto_tracker_app/providers/coin_provider.dart';
+import 'package:crypto_tracker_app/providers/exchanges_provider.dart';
+import 'package:crypto_tracker_app/providers/nft_provider.dart';
 import 'package:crypto_tracker_app/widgets/translucent_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,7 +12,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
-import '../models/nfts.dart';
 
 class MarketsScreen extends ConsumerStatefulWidget {
   const MarketsScreen({super.key});
@@ -22,7 +23,10 @@ class MarketsScreen extends ConsumerStatefulWidget {
 class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   int _selectedTabIndex = 0;
   Future<List<CoinModel>>? _coinsFuture;
-  Future<List<NFTModel>>? _nftFuture;
+  Future<List<dynamic>>? _nftFuture;
+  Future<Map<String, dynamic>?>? _nftDetailsFuture; //come back to this after fixing the nftFuture
+  Future <List<dynamic>>? _exchangesFuture;
+  
   final List<String> _tabs = [
     'Coins',
     'Watchlists',
@@ -59,11 +63,15 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   }
 
   updateNFT(){
-    _nftFuture = ref.read(coinProvider.notifier).fetchNFTs();
+    //  _exchangesFuture = ref.read(exhangesProvider.notifier).fetchExchanges();
+    // _nftFuture = ref.read(nftProvider.notifier).fetchNFTs();
+     //  _nftDetailsFuture = ref.read(nftProvider.notifier).getNFTDetails('pudgy-penguins');
+   
   }
   Future<void> _refreshCoins() async {
       setState(() {
          _coinsFuture = ref.read(coinProvider.notifier).fetchCoins();
+          _exchangesFuture = ref.read(exhangesProvider.notifier).fetchExchanges();
       updateNFT();
       });
   }
@@ -72,6 +80,7 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   void initState() {
     super.initState();
     _coinsFuture = ref.read(coinProvider.notifier).fetchCoins();
+     _exchangesFuture = ref.read(exhangesProvider.notifier).fetchExchanges();
     updateNFT();
   }
 
@@ -214,7 +223,33 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
           }
         },);
       case 3:
-        return Center(child: Text('Exchanges Coming Soon'));
+        return FutureBuilder(future: _exchangesFuture, builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+                child: CircularProgressIndicator(
+              color: AppColors.appColor,
+            ));
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Error: ${snapshot.error}',
+              ),
+            );
+          } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+            final exchanges = snapshot.data!;
+            return ListView.builder(
+              itemCount: exchanges.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(exchanges[index]['name']),
+                  subtitle: Text(exchanges[index]['country']),
+                );
+              },
+            );
+          } else {
+            return const Center(child: Text('No data available'));
+          }
+        },);
       case 4:
         return Center(child: Text('Categories Coming Soon'));
       default:

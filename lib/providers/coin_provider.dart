@@ -1,7 +1,5 @@
 import 'dart:convert';
-
 import 'package:crypto_tracker_app/models/coins.dart';
-import 'package:crypto_tracker_app/models/nfts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -12,7 +10,6 @@ final coinProvider =
 
 class CoinProvider extends ChangeNotifier {
   List<CoinModel> coinMarkets = [];
-   List<NFTModel> nfts = [];
    List coinChart = [];
 
   Future<List<CoinModel>> fetchCoins() async {
@@ -84,28 +81,4 @@ class CoinProvider extends ChangeNotifier {
       return coinChart;
     }
   }
-
-  Future<List<NFTModel>> fetchNFTs() async {
-    final apiKey = '${dotenv.env['COINGECKO_API_KEY']}';
-    String url =
-        'https://api.coingecko.com/api/v3/nfts/list?order=h24_volume_usd_desc&per_page=100&page=2';
-    final uri = Uri.parse(url);
-
-    try {
-      final response = await http.get(uri,
-          headers: {'x-cg-demo-api-key': apiKey, 'accept': 'application/json'});
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonData = jsonDecode(response.body);
-        nfts = jsonData.map((json) => NFTModel.fromMap(json)).toList();
-        notifyListeners();
-        return nfts;
-      } else {
-        debugPrint('Failed to load NFTs: ${response.statusCode}');
-        return nfts;
-      }
-  } catch (e) {
-    debugPrint(e.toString());
-     return nfts;
-  }
-}
 }
