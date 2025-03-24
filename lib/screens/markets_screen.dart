@@ -23,9 +23,9 @@ class MarketsScreen extends ConsumerStatefulWidget {
 class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   int _selectedTabIndex = 0;
   Future<List<CoinModel>>? _coinsFuture;
-  Future<List<dynamic>>? _nftFuture;
-  Future<Map<String, dynamic>?>? _nftDetailsFuture; //come back to this after fixing the nftFuture
-  Future <List<dynamic>>? _exchangesFuture;
+  Future? _nftFuture;
+  Future? _nftDetailsFuture; //come back to this after fixing the nftFuture
+  Future? _exchangesFuture;
   
   final List<String> _tabs = [
     'Coins',
@@ -63,15 +63,15 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   }
 
   updateNFT(){
-    //  _exchangesFuture = ref.read(exhangesProvider.notifier).fetchExchanges();
+     _exchangesFuture = ref.read(exchangesProvider).fetchExchanges();
     // _nftFuture = ref.read(nftProvider.notifier).fetchNFTs();
-     //  _nftDetailsFuture = ref.read(nftProvider.notifier).getNFTDetails('pudgy-penguins');
+      // _nftDetailsFuture = ref.read(nftProvider.notifier).getNFTDetails('pudgy-penguins');
    
   }
   Future<void> _refreshCoins() async {
       setState(() {
          _coinsFuture = ref.read(coinProvider.notifier).fetchCoins();
-          _exchangesFuture = ref.read(exhangesProvider.notifier).fetchExchanges();
+          // _exchangesFuture = ref.read(exhangesProvider.notifier).fetchExchanges();
       updateNFT();
       });
   }
@@ -80,7 +80,7 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   void initState() {
     super.initState();
     _coinsFuture = ref.read(coinProvider.notifier).fetchCoins();
-     _exchangesFuture = ref.read(exhangesProvider.notifier).fetchExchanges();
+    //  _exchangesFuture = ref.read(exhangesProvider.notifier).fetchExchanges();
     updateNFT();
   }
 
