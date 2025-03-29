@@ -12,7 +12,7 @@ class ExchangesProvider extends ChangeNotifier {
 
   Future fetchExchanges() async {
     final apiKey = '${dotenv.env['COINGECKO_API_KEY']}';
-    if (apiKey == null || apiKey.isEmpty) {
+    if (apiKey.isEmpty) {
       throw Exception('API key is missing or empty');
     }
 
