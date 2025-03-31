@@ -16,7 +16,7 @@ class ExchangesProvider extends ChangeNotifier {
       throw Exception('API key is missing or empty');
     }
 
-    String url = 'https://api.coingecko.com/api/v3/exchanges?per_page=101&page=1';
+    String url = 'https://api.coingecko.com/api/v3/exchanges';
     final uri = Uri.parse(url);
 
     try {
@@ -29,6 +29,7 @@ class ExchangesProvider extends ChangeNotifier {
         final List<dynamic> jsonData = jsonDecode(response.body);
         exchanges = jsonData;
         notifyListeners();
+        debugPrint('Exchanges updated');
         return exchanges;
       } else {
         debugPrint('Failed to load exchanges: ${response.statusCode}');
