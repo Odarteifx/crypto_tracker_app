@@ -23,7 +23,7 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   int _selectedTabIndex = 0;
   Future<List<CoinModel>>? _coinsFuture;
   Future? _nftFuture;
-  Future? _nftDetailsFuture; //come back to this after fixing the nftFuture
+  // Future? _nftDetailsFuture;
   Future? _exchangesFuture;
 
   final List<String> _tabs = [
