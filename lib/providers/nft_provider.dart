@@ -24,6 +24,7 @@ class NftProvider extends ChangeNotifier {
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         nfts = jsonData.map((json) => NFTModel.fromMap(json)).toList();
+        debugPrint('nfts updated');
         notifyListeners();
         return nfts;
       } else {

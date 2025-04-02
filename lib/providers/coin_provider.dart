@@ -25,6 +25,7 @@ class CoinProvider extends ChangeNotifier {
         final List<dynamic> jsonData = jsonDecode(response.body);
         coinMarkets = jsonData.map((json) => CoinModel.fromJson(json)).toList();
         notifyListeners();
+        debugPrint('Coins updated');
         return coinMarkets;
       } else {
         throw Exception('Failed to load coins: ${response.statusCode}');
@@ -71,6 +72,7 @@ class CoinProvider extends ChangeNotifier {
         final List<dynamic> jsonData = jsonDecode(response.body);
         coinChart = jsonData;
         notifyListeners();
+        debugPrint('coinChart drawn');
         return coinChart;
       } else {
         debugPrint('Failed to load coins: ${response.statusCode}');
