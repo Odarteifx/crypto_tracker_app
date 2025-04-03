@@ -69,6 +69,10 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
     _exchangesFuture = ref.read(exchangesProvider.notifier).fetchExchanges();
   }
 
+  updateCategories() {
+    _coinsFuture = ref.read(coinProvider.notifier).fetchCoins();
+  }
+
   Future<void> _refreshCoins() async {
     setState(() {
       _coinsFuture = ref.read(coinProvider.notifier).fetchCoins();
@@ -79,10 +83,11 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   void initState() {
     super.initState();
     _coinsFuture = ref.read(coinProvider.notifier).fetchCoins();
-    Future.delayed(Duration(seconds: 100), (){
+    updateCategories();
+    Future.delayed(Duration(seconds: 10), (){
       updateExchanges();
     });
-    Future.delayed(Duration(seconds: 200), (){
+    Future.delayed(Duration(seconds: 20), (){
       updateNFT();
     });
   }
@@ -250,7 +255,7 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                 itemBuilder: (context, index) {
                   return ListTile(
                     title: Text(exchanges[index]['name']),
-                    subtitle: Text(exchanges[index]['country']),
+                    subtitle: Text(exchanges[index]['country'] ?? 'No country available'),
                   );
                 },
               );
