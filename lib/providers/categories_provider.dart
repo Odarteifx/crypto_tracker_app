@@ -13,7 +13,7 @@ class CategoriesProvider extends ChangeNotifier {
   
   Future fetchCategories() async{
     final apiKey = '${dotenv.env['COINGECKO_API_KEY']}';
-    String url = 'https://api.coingecko.com/api/v3/coins/categories';
+    String url = 'https://api.coingecko.com/api/v3/coins/categories?order=market_cap_change_24h_desc';
     final uri = Uri.parse(url);
     try {
       final response = await http.get(uri, headers: {

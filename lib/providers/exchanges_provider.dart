@@ -16,7 +16,7 @@ class ExchangesProvider extends ChangeNotifier {
       throw Exception('API key is missing or empty');
     }
 
-    String url = 'https://api.coingecko.com/api/v3/exchanges';
+    String url = 'https://api.coingecko.com/api/v3/exchanges?per_page=200';
     final uri = Uri.parse(url);
 
     try {
