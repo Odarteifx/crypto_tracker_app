@@ -63,7 +63,6 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
     return symbol;
   }
 
-
   Color getTrustColor(trust) {
     if (trust == 10) {
       return AppColors.chartUpTrend;
@@ -71,7 +70,7 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
       return Colors.lightGreen;
     } else if (trust <= 5 && trust > 0) {
       return AppColors.chartDownTrend;
-    } else  {
+    } else {
       return AppColors.chartDownTrend;
     }
   }
@@ -83,17 +82,19 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
       return Colors.lightGreen.withValues(alpha: 0.1);
     } else if (trust <= 5 && trust > 0) {
       return AppColors.chartDownTrend.withValues(alpha: 0.1);
-    } else  {
+    } else {
       return AppColors.chartDownTrend.withValues(alpha: 0.1);
     }
   }
-  convertBtcToUsdt( double btcAmount)
-  {
-    final btcprice = ref.read(coinProvider.notifier).coinMarkets
+
+  convertBtcToUsdt(double btcAmount) {
+    final btcprice = ref
+        .read(coinProvider.notifier)
+        .coinMarkets
         .firstWhere((coin) => coin.symbol == 'btc')
         .currentPrice;
     final conPrice = btcprice * btcAmount;
-    
+
     return formatPrice(conPrice);
   }
 
@@ -274,34 +275,50 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
       case 3:
         return exchangesView();
       case 4:
-        return FutureBuilder(future: _categoriesFuture, builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-                child: CircularProgressIndicator(
-              color: AppColors.appColor,
-            ));
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Error: ${snapshot.error}',
-              ),
-            );
-          } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-            final categories = snapshot.data!;
-            return ListView.builder(
-              padding: EdgeInsets.zero,
-              itemCount: categories.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(categories[index]['name'] ?? 'No name available'),
-                  subtitle: Text(categories[index]['id'] ?? 'No ID available'),
-                );
-              },
-            );
-          } else {
-            return const Center(child: Text('No data available'));
-          }
-        },);
+        return FutureBuilder(
+          future: _categoriesFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                  child: CircularProgressIndicator(
+                color: AppColors.appColor,
+              ));
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  'Error: ${snapshot.error}',
+                ),
+              );
+            } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+              final categories = snapshot.data!;
+              return ListView.builder(
+                padding: EdgeInsets.zero,
+                itemCount: categories.length,
+                itemBuilder: (context, index) {
+                  return Row(
+                    children: [
+                      SizedBox(
+                          child: Stack(
+                        children: [],
+                      )),
+                      Text(
+                        categories[index]['name'],
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text('${categories[index]['market_cap_change_24h']
+                          .toStringAsFixed(2)} %', ),
+                    ],
+                  );
+                },
+              );
+            } else {
+              return const Center(child: Text('No data available'));
+            }
+          },
+        );
       default:
         return SizedBox();
     }
@@ -309,160 +326,158 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
 
   FutureBuilder<dynamic> exchangesView() {
     return FutureBuilder(
-        future: _exchangesFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-                child: CircularProgressIndicator(
-              color: AppColors.appColor,
-            ));
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Error: ${snapshot.error}',
-              ),
-            );
-          } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-            final exchanges = snapshot.data!;
-            return Column(
-              children: [
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 20.sp,
-                  ),
-                  child: SizedBox(
-                    height: 30.sp,
-                    child: Row(
-                      spacing: 7.sp,
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          '#',
+      future: _exchangesFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+              child: CircularProgressIndicator(
+            color: AppColors.appColor,
+          ));
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Text(
+              'Error: ${snapshot.error}',
+            ),
+          );
+        } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+          final exchanges = snapshot.data!;
+          return Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 20.sp,
+                ),
+                child: SizedBox(
+                  height: 30.sp,
+                  child: Row(
+                    spacing: 7.sp,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        '#',
+                        style: TextStyle(
+                          color: AppColors.inactiveIcon,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 6.sp,
+                      ),
+                      Text(
+                        'Exchange',
+                        style: TextStyle(
+                          color: AppColors.inactiveIcon,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          textAlign: TextAlign.center,
+                          'Reported Volume',
                           style: TextStyle(
                             color: AppColors.inactiveIcon,
                             fontSize: 12.sp,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        SizedBox(
-                          width: 6.sp,
+                      ),
+                      Text(
+                        'Trust',
+                        style: TextStyle(
+                          color: AppColors.inactiveIcon,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w500,
                         ),
-                        Text(
-                          'Exchange',
-                          style: TextStyle(
-                            color: AppColors.inactiveIcon,
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            textAlign: TextAlign.center,
-                            'Reported Volume',
-                            style: TextStyle(
-                              color: AppColors.inactiveIcon,
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          'Trust',
-                          style: TextStyle(
-                            color: AppColors.inactiveIcon,
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-                Expanded(
-                  child: ListView.builder(
-                    padding: EdgeInsets.zero,
-                    itemCount: exchanges.length,
-                    itemBuilder: (context, index) {
-                      return Column(
-                        children: [
-                          Padding(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 15.sp, vertical: 8.sp),
-                              child: SizedBox(
-                                height: 50.sp,
-                                child: Row(
-                                  spacing: 7.sp,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.center,
-                                  children: [
-                                    Text(exchanges[index]['trust_score_rank']
-                                        .toString()),
-                                    SizedBox(),
-                                    Image.network(
-                                      exchanges[index]['image'],
-                                      height: 26.sp,
+              ),
+              Expanded(
+                child: ListView.builder(
+                  padding: EdgeInsets.zero,
+                  itemCount: exchanges.length,
+                  itemBuilder: (context, index) {
+                    return Column(
+                      children: [
+                        Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 15.sp, vertical: 8.sp),
+                            child: SizedBox(
+                              height: 50.sp,
+                              child: Row(
+                                spacing: 7.sp,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(exchanges[index]['trust_score_rank']
+                                      .toString()),
+                                  SizedBox(),
+                                  Image.network(
+                                    exchanges[index]['image'],
+                                    height: 26.sp,
+                                  ),
+                                  SizedBox(
+                                    width: 85.sp,
+                                    child: Text(
+                                      exchanges[index]['name'],
+                                      style: TextStyle(
+                                        fontSize: 12.sp,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
-                                    SizedBox(
-                                      width: 85.sp,
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      textAlign: TextAlign.start,
+                                      convertBtcToUsdt(exchanges[index]
+                                          ['trade_volume_24h_btc']),
+                                      style: TextStyle(
+                                        fontSize: 14.sp,
+                                        color: AppColors.iconColor,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    height: 20.sp,
+                                    width: 35.sp,
+                                    decoration: BoxDecoration(
+                                      color: getTrustBackgroundColor(
+                                          exchanges[index]['trust_score']),
+                                      borderRadius: BorderRadius.circular(5.sp),
+                                    ),
+                                    child: Center(
                                       child: Text(
-                                        exchanges[index]['name'],
+                                        '${exchanges[index]['trust_score']}/10'
+                                            .toString(),
                                         style: TextStyle(
                                           fontSize: 12.sp,
-                                          fontWeight: FontWeight.w600,
+                                          color: getTrustColor(
+                                              exchanges[index]['trust_score']),
                                         ),
                                       ),
                                     ),
-                                    Expanded(
-                                      child: Text(
-                                        textAlign: TextAlign.start,
-                                        convertBtcToUsdt(exchanges[index]
-                                            ['trade_volume_24h_btc']),
-                                        style: TextStyle(
-                                          fontSize: 14.sp,
-                                          color: AppColors.iconColor,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      height: 20.sp,
-                                      width: 35.sp,
-                                      decoration: BoxDecoration(
-                                        color: getTrustBackgroundColor(exchanges[index]['trust_score']),
-                                        borderRadius:
-                                            BorderRadius.circular(5.sp),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          '${exchanges[index]['trust_score']}/10'
-                                              .toString(),
-                                          style: TextStyle(
-                                            fontSize: 12.sp,
-                                            color: getTrustColor(
-                                                exchanges[index]
-                                                    ['trust_score']),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )),
-                        ],
-                      );
-                    },
-                  ),
+                                  ),
+                                ],
+                              ),
+                            )),
+                      ],
+                    );
+                  },
                 ),
-              ],
-            );
-          } else {
-            return const Center(child: Text('No data available'));
-          }
-        },
-      );
+              ),
+            ],
+          );
+        } else {
+          return const Center(child: Text('No data available'));
+        }
+      },
+    );
   }
 
   RefreshIndicator coinsList() {
