@@ -295,6 +295,8 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                 padding: EdgeInsets.zero,
                 itemCount: categories.length,
                 itemBuilder: (context, index) {
+                  final catPercent = categories[index]['market_cap_change_24h'].toStringAsFixed(2) ;
+                  final upTrend = catPercent > 0;
                   return Row(
                     children: [
                       SizedBox(
@@ -308,8 +310,13 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      Text('${categories[index]['market_cap_change_24h']
-                          .toStringAsFixed(2)} %', ),
+                      Text('${catPercent.toStringAsFixed(2)}%', style: TextStyle(
+                                        fontSize: 12.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: upTrend
+                                            ? AppColors.chartUpTrend
+                                            : AppColors.chartDownTrend,
+                                      ), ),
                     ],
                   );
                 },
