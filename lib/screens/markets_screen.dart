@@ -56,6 +56,14 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
     return '\$${numberFormat.format(price)}';
   }
 
+
+  String formatCatCap(double price) {
+    if (price < 1) {
+      return '\$$price';
+    }
+    final NumberFormat numberFormat = NumberFormat("#,##0", "en_US");
+    return '\$${numberFormat.format(price)}';
+  }
   String formatSymbol(String symbol) {
     if (symbol.length > 7) {
       return '${symbol.substring(0, 7)}...';
@@ -295,29 +303,54 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                 padding: EdgeInsets.zero,
                 itemCount: categories.length,
                 itemBuilder: (context, index) {
-                  final catPercent = categories[index]['market_cap_change_24h'].toStringAsFixed(2) ;
-                  final upTrend = catPercent > 0;
-                  return Row(
-                    children: [
-                      SizedBox(
-                          child: Stack(
-                        children: [],
-                      )),
-                      Text(
-                        categories[index]['name'],
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
+                  final catPercent =
+                      categories[index]['market_cap_change_24h'] ?? '--';
+                  final upTrend =
+                      catPercent == '--' ? catPercent == '0' : catPercent > 0;
+
+                  return Padding(
+                    padding: EdgeInsets.symmetric(
+                              horizontal: 15.sp, vertical: 8.sp),
+                    child: SizedBox(
+                      height: 50.sp,
+                      child: Row(
+                        spacing: 5.sp,
+                        children: [
+                          SizedBox(
+                              child: Stack(
+                            children: [],
+                          )),
+                          SizedBox(
+                            width: 90.sp,
+                            child: Text(
+                              categories[index]['name'],
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            catPercent == '--'
+                                ? '--'
+                                : '${catPercent.toStringAsFixed(2)}%',
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w600,
+                              color: upTrend
+                                  ? AppColors.chartUpTrend
+                                  : AppColors.chartDownTrend,
+                            ),
+                          ),
+                          Text(categories[index]['market_cap'] == null
+                              ? '--'
+                              : 
+                                 formatCatCap(categories[index]['market_cap'])) ,
+                        ],
                       ),
-                      Text('${catPercent.toStringAsFixed(2)}%', style: TextStyle(
-                                        fontSize: 12.sp,
-                                        fontWeight: FontWeight.w600,
-                                        color: upTrend
-                                            ? AppColors.chartUpTrend
-                                            : AppColors.chartDownTrend,
-                                      ), ),
-                    ],
+                    ),
                   );
                 },
               );
