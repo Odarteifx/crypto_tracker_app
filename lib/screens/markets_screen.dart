@@ -121,6 +121,15 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   Future<void> _refreshCoins() async {
     setState(() {
       _coinsFuture = ref.read(coinProvider.notifier).fetchCoins();
+      Future.delayed(Duration(seconds: 10), () {
+      updateCategories();
+    });
+    Future.delayed(Duration(seconds: 30), () {
+      updateExchanges();
+    });
+    Future.delayed(Duration(seconds: 40), () {
+      updateNFT();
+    });
     });
   }
 
@@ -131,10 +140,10 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
     Future.delayed(Duration(seconds: 10), () {
       updateCategories();
     });
-    Future.delayed(Duration(seconds: 20), () {
+    Future.delayed(Duration(seconds: 30), () {
       updateExchanges();
     });
-    Future.delayed(Duration(seconds: 30), () {
+    Future.delayed(Duration(seconds: 40), () {
       updateNFT();
     });
   }
@@ -364,69 +373,75 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
                         final upTrend =
                             catPercent == '--' ? catPercent == '0' : catPercent > 0;
                     
-                        return Padding(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 15.sp, vertical: 8.sp),
-                          child: SizedBox(
-                            height: 50.sp,
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              spacing: 5.sp,
-                              children: [
-                                SizedBox(
-                                  width: 80.sp,
-                                  child: Stack(
-                                    alignment: Alignment.center,
-                                    children: List.generate(
-                                      categories[index]['top_3_coins'].length,
-                                      (i) => Positioned(
-                                        left: i * 20.sp,
-                                        child: ShadAvatar(
-                                          categories[index]['top_3_coins'][i],
-                                          size: Size(24.sp, 24.sp),
+                        return GestureDetector(
+                          onTap: (){
+                            context.push('/categoryDetails',
+                                extra: categories[index]);
+                          },
+                          child: Padding(
+                            padding:
+                                EdgeInsets.symmetric(horizontal: 15.sp, vertical: 8.sp),
+                            child: SizedBox(
+                              height: 50.sp,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                spacing: 5.sp,
+                                children: [
+                                  SizedBox(
+                                    width: 80.sp,
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: List.generate(
+                                        categories[index]['top_3_coins'].length,
+                                        (i) => Positioned(
+                                          left: i * 20.sp,
+                                          child: ShadAvatar(
+                                            categories[index]['top_3_coins'][i],
+                                            size: Size(24.sp, 24.sp),
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                SizedBox(
-                                  width: 90.sp,
-                                  child: Text(
-                                    categories[index]['name'],
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
+                                  SizedBox(
+                                    width: 90.sp,
+                                    child: Text(
+                                      categories[index]['name'],
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 12.sp,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    catPercent == '--'
+                                        ? '--'
+                                        : '${catPercent.toStringAsFixed(2)}%',
                                     style: TextStyle(
                                       fontSize: 12.sp,
                                       fontWeight: FontWeight.w600,
+                                      color: upTrend
+                                          ? AppColors.chartUpTrend
+                                          : AppColors.chartDownTrend,
                                     ),
                                   ),
-                                ),
-                                Text(
-                                  catPercent == '--'
-                                      ? '--'
-                                      : '${catPercent.toStringAsFixed(2)}%',
-                                  style: TextStyle(
-                                    fontSize: 12.sp,
-                                    fontWeight: FontWeight.w600,
-                                    color: upTrend
-                                        ? AppColors.chartUpTrend
-                                        : AppColors.chartDownTrend,
+                                  Expanded(
+                                    child: Text(
+                                      categories[index]['market_cap'] == null
+                                          ? '--'
+                                          : formatCatCap(
+                                              categories[index]['market_cap'], ),
+                                      textAlign: TextAlign.end,
+                                      style: TextStyle(
+                                              fontSize: 14.sp,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                    ),
                                   ),
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    categories[index]['market_cap'] == null
-                                        ? '--'
-                                        : formatCatCap(
-                                            categories[index]['market_cap'], ),
-                                    textAlign: TextAlign.end,
-                                    style: TextStyle(
-                                            fontSize: 14.sp,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         );

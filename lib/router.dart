@@ -7,6 +7,7 @@ import 'package:crypto_tracker_app/screens/search_screen.dart';
 import 'package:crypto_tracker_app/screens/settings_screen.dart';
 import 'package:go_router/go_router.dart';
 
+import 'screens/category_details_screen.dart';
 import 'screens/coin_converter_screen.dart';
 
 final GoRouter router = GoRouter(
@@ -38,5 +39,7 @@ final GoRouter router = GoRouter(
     GoRoute(
         path: '/coinConverter',
         builder: (context, state) => CoinConverterScreen()),
+    GoRoute(path: '/categoryDetails',
+        builder: (context, state) => CategoryDetailsScreen(category: state.extra)),
   ],
 );
