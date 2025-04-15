@@ -84,15 +84,32 @@ class CategoryDetailsScreen extends StatelessWidget {
                 ],
               ),
             ),
-            Text(category['top_3_coins'].length.toString()),
             Expanded(
               child: ListView.builder(
                 itemCount: category['top_3_coins'].length,
                 itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(category['top_3_coins_id'][index]),
-                    subtitle: Text(category['top_3_coins_id'][index]),
-                    leading: ShadAvatar(category['top_3_coins'][index], size: Size(30.sp, 30.sp),),
+                  return Row(
+                    children: [
+                       ShadAvatar(category['top_3_coins'][index], size: Size(30.sp, 30.sp),),
+                       Column(
+                        children: [
+                          Text(
+                            category['top_3_coins_id'][index],
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            category['top_3_coins_id'][index],
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                       ),
+                    ],
                   );
                 },
               ),
