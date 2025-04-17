@@ -113,6 +113,12 @@ class CategoryDetailsScreen extends StatelessWidget {
                   );
                 },
               ),
+            ),
+            Column(
+              children: [
+                Text('data'),
+                Text('data')
+              ],
             )
           ],
         ),
