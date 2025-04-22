@@ -16,6 +16,59 @@ class CategoryDetailsScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 20.sp,
+                ),
+                child: SizedBox(
+                  height: 30.sp,
+                  child: Row(
+                    spacing: 7.sp,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Top Coins',
+                        style: TextStyle(
+                          color: AppColors.inactiveIcon,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 6.sp,
+                      ),
+                      Text(
+                        'Category',
+                        style: TextStyle(
+                          color: AppColors.inactiveIcon,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          textAlign: TextAlign.center,
+                          '24H',
+                          style: TextStyle(
+                            color: AppColors.inactiveIcon,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        'Market Cap',
+                        style: TextStyle(
+                          color: AppColors.inactiveIcon,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: 8.sp,
