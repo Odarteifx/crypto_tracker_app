@@ -137,6 +137,7 @@ class CategoryDetailsScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              
             Expanded(
               child: ListView.builder(
                 itemCount: category['top_3_coins'].length,
